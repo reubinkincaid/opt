@@ -440,6 +440,127 @@ def create_overnight_dashboard(ticker_summary, output_file=None):
         
         print(f"Dashboard saved to {output_file}")
 
+# output the sentiment analysis for both daily and overnight timeframes
+def analyze_daily_changes(previous_day_df, current_day_df):
+    """
+    Compare previous day's close vs current day's close data to detect day-to-day changes in sentiment
+    """
+    # Ensure we're comparing the same options
+    common_columns = ['ticker', 'strike', 'expiration', 'option_type']
+    
+    # Merge the dataframes
+    merged = previous_day_df.merge(
+        current_day_df,
+        on=common_columns,
+        suffixes=('_previous', '_current')
+    )
+    
+    # Calculate changes in IV and pricing
+    merged['iv_change'] = merged['impliedVolatility_current'] - merged['impliedVolatility_previous']
+    merged['iv_change_pct'] = (merged['iv_change'] / merged['impliedVolatility_previous']) * 100
+    
+    merged['price_change'] = merged['lastPrice_current'] - merged['lastPrice_previous']
+    merged['price_change_pct'] = (merged['price_change'] / merged['lastPrice_previous']) * 100
+    
+    # Calculate sentiment scores
+    # For calls: IV and price increase = bullish, decrease = bearish
+    # For puts: IV and price increase = bearish, decrease = bullish
+    merged['sentiment_score'] = np.where(
+        merged['option_type'] == 'call',
+        merged['price_change_pct'],  # Call price up = bullish
+        -merged['price_change_pct']  # Put price up = bearish
+    )
+    
+    # Add volume-weighted component if current data has volume
+    if 'volume_current' in merged.columns and merged['volume_current'].sum() > 0:
+        # Current volume indicates activity - weight score by volume
+        merged['weighted_score'] = merged['sentiment_score'] * merged['volume_current']
+        volume_factor = True
+    else:
+        # No volume data - use open interest from previous as weighting
+        merged['weighted_score'] = merged['sentiment_score'] * merged['openInterest_previous']
+        volume_factor = False
+    
+    # Summarize by ticker
+    ticker_summary = merged.groupby('ticker').agg({
+        'weighted_score': 'sum',
+        'sentiment_score': 'mean',
+        'iv_change': 'mean',
+        'price_change_pct': 'mean',
+        'openInterest_previous': 'sum',
+    }).reset_index()
+    
+    # Normalize by open interest
+    ticker_summary['normalized_score'] = ticker_summary['weighted_score'] / ticker_summary['openInterest_previous']
+    ticker_summary['sentiment'] = np.where(ticker_summary['normalized_score'] > 0, 'BULLISH', 'BEARISH')
+    
+    # Sort from most bullish to most bearish
+    ticker_summary = ticker_summary.sort_values('normalized_score', ascending=False)
+    
+    return merged, ticker_summary, volume_factor
+
+def create_daily_dashboard(ticker_summary, output_file=None):
+    """
+    Creates a dashboard of day-to-day changes in sentiment
+    """
+    # Add sector mapping
+    ticker_summary['sector'] = ticker_summary['ticker'].map(
+        lambda x: SECTOR_MAP.get(x, SECTOR_MAP.get('DEFAULT', 'Other'))
+    )
+    
+    # Calculate sector aggregates
+    sector_summary = ticker_summary.groupby('sector').agg({
+        'normalized_score': 'mean',
+        'openInterest_previous': 'sum',
+        'iv_change': 'mean'
+    }).reset_index()
+    
+    sector_summary['sentiment'] = np.where(sector_summary['normalized_score'] > 0, 'BULLISH', 'BEARISH')
+    sector_summary = sector_summary.sort_values('normalized_score', ascending=False)
+    
+    # Print the dashboard
+    print("\n===== DAILY SENTIMENT DASHBOARD =====")
+    
+    print("\nTop 5 BULLISH Tickers:")
+    bullish = ticker_summary[ticker_summary['sentiment'] == 'BULLISH'].head(5)
+    for _, row in bullish.iterrows():
+        print(f"{row['ticker']}: {row['normalized_score']:.2f} (IV Δ: {row['iv_change']*100:.1f}%)")
+    
+    print("\nTop 5 BEARISH Tickers:")
+    bearish = ticker_summary[ticker_summary['sentiment'] == 'BEARISH'].tail(5).iloc[::-1]
+    for _, row in bearish.iterrows():
+        print(f"{row['ticker']}: {row['normalized_score']:.2f} (IV Δ: {row['iv_change']*100:.1f}%)")
+    
+    print("\nSector Sentiment:")
+    for _, row in sector_summary.iterrows():
+        print(f"{row['sector']}: {row['sentiment']} ({row['normalized_score']:.2f})")
+    
+    # Calculate overall market sentiment
+    market_score = (ticker_summary['normalized_score'] * ticker_summary['openInterest_previous']).sum() / ticker_summary['openInterest_previous'].sum()
+    market_direction = "BULLISH" if market_score > 0 else "BEARISH"
+    
+    print(f"\nOverall Market Sentiment: {market_direction} ({market_score:.2f})")
+    
+    # Save to file if requested
+    if output_file:
+        with open(output_file, 'w') as f:
+            f.write("DAILY SENTIMENT DASHBOARD\n\n")
+            f.write(f"Overall Market: {market_direction} ({market_score:.2f})\n\n")
+            
+            f.write("Top Bullish:\n")
+            for _, row in bullish.iterrows():
+                f.write(f"{row['ticker']}: {row['normalized_score']:.2f}\n")
+            
+            f.write("\nTop Bearish:\n")
+            for _, row in bearish.iterrows():
+                f.write(f"{row['ticker']}: {row['normalized_score']:.2f}\n")
+                
+            f.write("\nSector Sentiment:\n")
+            for _, row in sector_summary.iterrows():
+                f.write(f"{row['sector']}: {row['sentiment']} ({row['normalized_score']:.2f})\n")
+        
+        print(f"Daily Dashboard saved to {output_file}")
+
 def run_automated_data_collection():
     """
     Automated pipeline for scheduled execution
@@ -531,7 +652,7 @@ def run_automated_data_collection():
         combined_df.to_parquet(filename)
         print(f"Volatility Surface data saved to {filename}")
         
-        # For morning runs, try to find and compare with previous evening data
+        # For morning runs, try to find and compare with previous evening data (Overnight Analysis)
         if run_type == "morning":
             # Look for previous evening data file
             prev_date = date_str
@@ -552,17 +673,48 @@ def run_automated_data_collection():
                     merged_data, summary, volume_factor = analyze_overnight_changes(evening_df, combined_df)
                     
                     # Create and save dashboard
-                    dashboard_file = f'options_data/sentiment_dashboard_{date_str}_{time_str}.txt'
+                    dashboard_file = f'options_data/overnight_sentiment_dashboard_{date_str}_{time_str}.txt'
                     create_overnight_dashboard(summary, dashboard_file)
                     
                     # Save detailed analysis
                     merged_data.to_parquet(f'options_data/overnight_analysis_{date_str}_{time_str}.parquet')
-                    summary.to_csv(f'options_data/sentiment_summary_{date_str}_{time_str}.csv')
+                    summary.to_csv(f'options_data/overnight_sentiment_summary_{date_str}_{time_str}.csv')
                     
                 except Exception as e:
                     print(f"Error comparing with evening data: {e}")
             else:
                 print("No evening data found for comparison")
+        
+        # For evening runs, try to find and compare with previous day's evening data (Daily Analysis)
+        if run_type == "evening":
+            # Look for previous day's evening data file
+            prev_date = (datetime.now() - pd.Timedelta(days=1)).strftime('%Y-%m-%d')
+            
+            prev_evening_files = [f for f in os.listdir('options_data') 
+                               if f.startswith(f'vol_surface_{prev_date}') and 'evening' in f and f.endswith('.parquet')]
+            
+            if prev_evening_files:
+                latest_prev_evening_file = sorted(prev_evening_files)[-1]  # Get the most recent evening file from previous day
+                print(f"Found previous day's evening data: {latest_prev_evening_file}")
+                
+                try:
+                    prev_evening_df = pd.read_parquet(os.path.join('options_data', latest_prev_evening_file))
+                    
+                    print("Analyzing day-to-day changes...")
+                    daily_merged_data, daily_summary, daily_volume_factor = analyze_daily_changes(prev_evening_df, combined_df)
+                    
+                    # Create and save dashboard
+                    daily_dashboard_file = f'options_data/daily_sentiment_dashboard_{date_str}_{time_str}.txt'
+                    create_daily_dashboard(daily_summary, daily_dashboard_file)
+                    
+                    # Save detailed analysis
+                    daily_merged_data.to_parquet(f'options_data/daily_analysis_{date_str}_{time_str}.parquet')
+                    daily_summary.to_csv(f'options_data/daily_sentiment_summary_{date_str}_{time_str}.csv')
+                    
+                except Exception as e:
+                    print(f"Error comparing with previous day's evening data: {e}")
+            else:
+                print("No previous day's evening data found for comparison")
         
         print(f"Analyzing volatility skew...")
         skew_df = analyze_skew(combined_df)
