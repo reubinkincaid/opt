@@ -516,7 +516,7 @@ def run_automated_data_collection():
     # Output for gamma flip
     if gamma_results:
         output = ';'.join(gamma_results)
-        gamma_file = f'options_data/gamma_flip_{date_str}_{time_str}.txt'
+        gamma_file = f'options_data/tv_oi_string_{date_str}_{time_str}.txt'
         with open(gamma_file, 'w') as f:
             f.write(output)
         print(f"Gamma Flip Analysis saved to {gamma_file}")
