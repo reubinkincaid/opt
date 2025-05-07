@@ -420,7 +420,7 @@ def create_overnight_dashboard(ticker_summary, output_file=None):
     
     print(f"\nOverall Market Sentiment: {market_direction} ({market_score:.2f})")
     
-    # Save to file if requested
+    # Save to file
     if output_file:
         with open(output_file, 'w') as f:
             f.write("OVERNIGHT SENTIMENT DASHBOARD\n\n")
@@ -567,7 +567,7 @@ def run_automated_data_collection():
     """
     # Determine if this is a morning or evening run based on current time
     current_hour = datetime.now().hour
-    run_type = "evening" if current_hour >= 16 else "morning"
+    run_type = "evening" if (current_hour >= 20 or current_hour < 4) else "morning"
     
     print(f"Starting automated {run_type} run at {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
     
