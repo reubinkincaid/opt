@@ -54,6 +54,9 @@ def run_automated_data_collection():
     all_vol_surface_data = []
     failed_tickers = []
     
+    # Add this line to collect raw data
+    all_raw_data = {}
+    
     # Process tickers in batches
     for i in range(0, len(DEFAULT_TICKERS), batch_size):
         batch = DEFAULT_TICKERS[i:i+batch_size]
@@ -66,14 +69,18 @@ def run_automated_data_collection():
             if j > 1:
                 time.sleep(delay)
             
-            # Process ticker
-            gamma_result, vol_surface_df, _ = process_ticker(
+            # Process ticker - update to capture raw_data
+            gamma_result, vol_surface_df, raw_data = process_ticker(
                 ticker, 
                 (i + j), 
                 len(DEFAULT_TICKERS), 
                 run_gamma=run_gamma,
                 run_vol=run_vol
             )
+            
+            # Store raw data if available
+            if raw_data:
+                all_raw_data.update(raw_data)
             
             # Track results
             success = False
@@ -102,6 +109,20 @@ def run_automated_data_collection():
     # Prepare directory
     os.makedirs('options_data', exist_ok=True)
     date_str = datetime.now().strftime('%Y-%m-%d')
+    
+    # Save raw data
+    if all_raw_data:
+        timestamp = date_str
+        raw_data_file = save_raw_options_data(all_raw_data, timestamp, run_type)
+        print(f"Raw options data saved to {raw_data_file}")
+        
+    # Output for gamma flip
+    if gamma_results:
+        output = ';'.join(gamma_results)
+        gamma_file = f'options_data/tradingview_{date_str}_{run_type}.txt'
+        with open(gamma_file, 'w') as f:
+            f.write(output)
+        print(f"Gamma Flip Analysis saved to {gamma_file}")
     
     # Output for gamma flip
     if gamma_results:
