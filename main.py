@@ -102,12 +102,11 @@ def run_automated_data_collection():
     # Prepare directory
     os.makedirs('options_data', exist_ok=True)
     date_str = datetime.now().strftime('%Y-%m-%d')
-    time_str = datetime.now().strftime('%H%M')
     
     # Output for gamma flip
     if gamma_results:
         output = ';'.join(gamma_results)
-        gamma_file = f'options_data/tv_oi_string_{date_str}_{time_str}.txt'
+        gamma_file = f'options_data/tradingview_{date_str}_{run_type}.txt'
         with open(gamma_file, 'w') as f:
             f.write(output)
         print(f"Gamma Flip Analysis saved to {gamma_file}")
@@ -118,7 +117,7 @@ def run_automated_data_collection():
         combined_df = prepare_for_parquet(combined_df)
         
         # Save combined data
-        filename = f'options_data/vol_surface_{date_str}_{time_str}_{run_type}.parquet'
+        filename = f'options_data/vol_surface_{date_str}_{run_type}.parquet'
         combined_df.to_parquet(filename)
         print(f"Volatility Surface data saved to {filename}")
         
@@ -143,12 +142,12 @@ def run_automated_data_collection():
                     merged_data, summary, volume_factor = analyze_overnight_changes(evening_df, combined_df)
                     
                     # Create and save dashboard
-                    dashboard_file = f'options_data/overnight_sentiment_dashboard_{date_str}_{time_str}.txt'
+                    dashboard_file = f'options_data/overnight_sentiment_dashboard_{date_str}.txt'
                     create_overnight_dashboard(summary, dashboard_file)
                     
                     # Save detailed analysis
-                    merged_data.to_parquet(f'options_data/overnight_analysis_{date_str}_{time_str}.parquet')
-                    summary.to_csv(f'options_data/overnight_sentiment_summary_{date_str}_{time_str}.csv')
+                    merged_data.to_parquet(f'options_data/overnight_analysis_{date_str}.parquet')
+                    summary.to_csv(f'options_data/overnight_sentiment_summary_{date_str}.csv')
                     
                 except Exception as e:
                     print(f"Error comparing with evening data: {e}")
@@ -174,12 +173,12 @@ def run_automated_data_collection():
                     daily_merged_data, daily_summary, daily_volume_factor = analyze_daily_changes(prev_evening_df, combined_df)
                     
                     # Create and save dashboard
-                    daily_dashboard_file = f'options_data/daily_sentiment_dashboard_{date_str}_{time_str}.txt'
+                    daily_dashboard_file = f'options_data/daily_sentiment_dashboard_{date_str}.txt'
                     create_daily_dashboard(daily_summary, daily_dashboard_file)
                     
                     # Save detailed analysis
-                    daily_merged_data.to_parquet(f'options_data/daily_analysis_{date_str}_{time_str}.parquet')
-                    daily_summary.to_csv(f'options_data/daily_sentiment_summary_{date_str}_{time_str}.csv')
+                    daily_merged_data.to_parquet(f'options_data/daily_analysis_{date_str}.parquet')
+                    daily_summary.to_csv(f'options_data/daily_sentiment_summary_{date_str}.csv')
                     
                 except Exception as e:
                     print(f"Error comparing with previous day's evening data: {e}")
@@ -188,7 +187,7 @@ def run_automated_data_collection():
         
         print(f"Analyzing volatility skew...")
         skew_df = analyze_skew(combined_df)
-        skew_file = f'options_data/skew_analysis_{date_str}_{time_str}.csv'
+        skew_file = f'options_data/skew_analysis_{date_str}_{run_type}.csv'
         skew_df.to_csv(skew_file)
         print(f"Skew Analysis saved to {skew_file}")
     
