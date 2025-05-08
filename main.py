@@ -67,7 +67,7 @@ def run_automated_data_collection():
                 time.sleep(delay)
             
             # Process ticker
-            gamma_result, vol_surface_df = process_ticker(
+            gamma_result, vol_surface_df, _ = process_ticker(
                 ticker, 
                 (i + j), 
                 len(DEFAULT_TICKERS), 
