@@ -7,7 +7,7 @@ from datetime import datetime
 
 from gamma_analysis import calculate_gamma_flip
 
-def process_ticker(ticker, index=None, total=None, run_gamma=True, run_vol=True):
+def process_ticker(ticker, index=None, total=None, run_gamma=True, run_vol=True, collect_raw=True):
     """
     Process a single ticker to collect gamma flip and volatility surface data
     
@@ -17,9 +17,10 @@ def process_ticker(ticker, index=None, total=None, run_gamma=True, run_vol=True)
         total (int): Total tickers for progress reporting
         run_gamma (bool): Whether to run gamma flip analysis
         run_vol (bool): Whether to run volatility surface analysis
+        collect_raw (bool): Whether to collect and return raw options data
         
     Returns:
-        tuple: (gamma_result, vol_surface_df)
+        tuple: (gamma_result, vol_surface_df, raw_data)
     """
     print(f"Processing {ticker}" + (f" [{index}/{total}]" if index and total else ""))
     
@@ -31,7 +32,7 @@ def process_ticker(ticker, index=None, total=None, run_gamma=True, run_vol=True)
         hist = data.history(period="2d")
         if hist.empty:
             print(f"No price data for {ticker}")
-            return None, None
+            return None, None, None
             
         spot = hist['Close'].iloc[-1]
         price = spot
@@ -45,32 +46,45 @@ def process_ticker(ticker, index=None, total=None, run_gamma=True, run_vol=True)
         expiries = data.options
         if not expiries:
             print(f"No options data for {ticker}")
-            return None, None
+            return None, None, None
+        
+        # Raw data collection
+        raw_data = None
+        if collect_raw:
+            raw_data = {ticker: {}}
             
         # === PART 1: Gamma Flip Calculation ===
         gamma_result = None
-        if run_gamma:
+        all_options = []
+        
+        for exp in expiries:
+            try:
+                opt = data.option_chain(exp)
+                calls, puts = opt.calls, opt.puts
+                
+                # Store raw data if requested
+                if collect_raw:
+                    raw_data[ticker][exp] = {
+                        'calls': calls.copy(),
+                        'puts': puts.copy(),
+                        'spot': spot,
+                        'prev_close': prev_close
+                    }
+                
+                if not calls.empty and not puts.empty:
+                    calls_copy = calls.copy()
+                    puts_copy = puts.copy()
+                    calls_copy['ExpirationDate'] = pd.to_datetime(exp)
+                    puts_copy['ExpirationDate'] = pd.to_datetime(exp)
+                    all_options.append((calls_copy, puts_copy))
+            except Exception as e:
+                print(f"Error with gamma calc for {ticker} {exp}: {e}")
+                continue
+        
+        if run_gamma and all_options:
             fromStrike, toStrike = 0.5 * spot, 2.0 * spot
             today = pd.Timestamp.today().date()
-            all_options = []
-            
-            for exp in expiries:
-                try:
-                    opt = data.option_chain(exp)
-                    calls, puts = opt.calls, opt.puts
-                    
-                    if not calls.empty and not puts.empty:
-                        calls_copy = calls.copy()
-                        puts_copy = puts.copy()
-                        calls_copy['ExpirationDate'] = pd.to_datetime(exp)
-                        puts_copy['ExpirationDate'] = pd.to_datetime(exp)
-                        all_options.append((calls_copy, puts_copy))
-                except Exception as e:
-                    print(f"Error with gamma calc for {ticker} {exp}: {e}")
-                    continue
-            
-            if all_options:
-                gamma_result = calculate_gamma_flip(ticker, all_options, spot, fromStrike, toStrike, today)
+            gamma_result = calculate_gamma_flip(ticker, all_options, spot, fromStrike, toStrike, today)
         
         # === PART 2: Volatility Surface ===
         vol_surface_df = None
@@ -121,11 +135,11 @@ def process_ticker(ticker, index=None, total=None, run_gamma=True, run_vol=True)
                     vol_surface_df['prev_close'] = prev_close
                     vol_surface_df['price_change_pct'] = (price - prev_close) / prev_close * 100
         
-        return gamma_result, vol_surface_df
+        return gamma_result, vol_surface_df, raw_data
         
     except Exception as e:
         print(f"Error processing {ticker}: {e}")
-        return None, None
+        return None, None, None
 
 def prepare_for_parquet(df):
     """
@@ -152,3 +166,54 @@ def prepare_for_parquet(df):
                 pass
     
     return df
+
+def save_raw_options_data(ticker_data, timestamp, run_type):
+    """
+    Save raw options data before any processing
+    
+    Args:
+        ticker_data (dict): Dictionary containing raw options data by ticker
+        timestamp (str): Timestamp string for the filename
+        run_type (str): 'morning' or 'evening'
+        
+    Returns:
+        str: Path to the saved file
+    """
+    # Create a DataFrame from the raw data
+    raw_data = []
+    
+    for ticker, data in ticker_data.items():
+        for exp_date, options in data.items():
+            if 'calls' in options and not options['calls'].empty:
+                df_calls = options['calls'].copy()
+                df_calls['ticker'] = ticker
+                df_calls['expiration'] = exp_date
+                df_calls['option_type'] = 'call'
+                df_calls['timestamp'] = timestamp
+                df_calls['run_type'] = run_type
+                df_calls['underlying_price'] = options.get('spot', None)
+                df_calls['prev_close'] = options.get('prev_close', None)
+                raw_data.append(df_calls)
+            
+            if 'puts' in options and not options['puts'].empty:
+                df_puts = options['puts'].copy()
+                df_puts['ticker'] = ticker
+                df_puts['expiration'] = exp_date
+                df_puts['option_type'] = 'put'
+                df_puts['timestamp'] = timestamp
+                df_puts['run_type'] = run_type
+                df_puts['underlying_price'] = options.get('spot', None)
+                df_puts['prev_close'] = options.get('prev_close', None)
+                raw_data.append(df_puts)
+    
+    # Combine all data and prepare for parquet
+    if raw_data:
+        combined_df = pd.concat(raw_data)
+        combined_df = prepare_for_parquet(combined_df)
+        
+        # Save to parquet
+        filepath = f'options_data/raw_options_{timestamp}_{run_type}.parquet'
+        combined_df.to_parquet(filepath)
+        return filepath
+    
+    return None
