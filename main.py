@@ -24,7 +24,7 @@ from datetime import datetime
 import pandas as pd
 
 # Import modules
-from data_collection import process_ticker, prepare_for_parquet
+from data_collection import process_ticker, prepare_for_parquet, save_raw_options_data
 from utils import DEFAULT_TICKERS
 from gamma_analysis import calculate_gamma_flip
 from volatility_analysis import analyze_skew
