@@ -1,49 +1,49 @@
 OVERNIGHT SENTIMENT DASHBOARD
 
-Overall Market: BULLISH (0.00)
+Overall Market: BULLISH (0.43)
 
 Top Bullish:
-V: 0.02
-GS: 0.01
-NOW: 0.01
-MSTR: 0.00
-DIS: 0.00
+TSLA: 12.40
+SERV: 11.03
+FSLR: 8.78
+MARA: 6.97
+SGI: 2.87
 
 Top Bearish:
-IBB: -0.01
-FSLR: -0.01
-ADBE: -0.00
-SRPT: -0.00
-XBI: -0.00
+CVNA: -7.48
+IBB: -6.21
+PLTR: -3.77
+NVAX: -3.38
+XLP: -2.08
 
 Sector Sentiment:
-Financials: BULLISH (0.00)
-Entertainment: BULLISH (0.00)
-Software: BULLISH (0.00)
-Crypto: BULLISH (0.00)
-Industrials: BULLISH (0.00)
-Retail: BULLISH (0.00)
-Auto Retail: BULLISH (0.00)
-Semiconductor: BULLISH (0.00)
-Utilities: BULLISH (0.00)
-Consumer Discretionary: BULLISH (0.00)
-Index: BULLISH (0.00)
-Technology: BULLISH (0.00)
-EV: BULLISH (0.00)
-Consumer Goods: BEARISH (0.00)
-Restaurant: BEARISH (0.00)
-Real Estate: BEARISH (0.00)
-Healthcare: BEARISH (0.00)
-Energy: BEARISH (0.00)
-Auto Services: BEARISH (0.00)
-Automotive Tech: BEARISH (0.00)
-Consumer Staples: BEARISH (0.00)
-Leveraged Index: BEARISH (0.00)
-Rideshare: BEARISH (0.00)
-Services: BEARISH (0.00)
-Other: BEARISH (0.00)
-Materials: BEARISH (0.00)
-eVTOL: BEARISH (0.00)
-Social Media: BEARISH (-0.00)
-Biotech: BEARISH (-0.00)
-Clean Energy: BEARISH (-0.00)
+EV: BULLISH (12.40)
+Services: BULLISH (11.03)
+Clean Energy: BULLISH (3.07)
+Crypto: BULLISH (2.70)
+Automotive Tech: BULLISH (1.10)
+Materials: BULLISH (0.46)
+Technology: BULLISH (0.30)
+Auto Services: BULLISH (0.13)
+Consumer Discretionary: BULLISH (0.11)
+Energy: BULLISH (0.06)
+Real Estate: BULLISH (0.01)
+Entertainment: BEARISH (-0.03)
+Utilities: BEARISH (-0.03)
+eVTOL: BEARISH (-0.04)
+Industrials: BEARISH (-0.07)
+Rideshare: BEARISH (-0.09)
+Financials: BEARISH (-0.10)
+Semiconductor: BEARISH (-0.11)
+Other: BEARISH (-0.24)
+Healthcare: BEARISH (-0.36)
+Consumer Goods: BEARISH (-0.37)
+Social Media: BEARISH (-0.38)
+Index: BEARISH (-0.47)
+Restaurant: BEARISH (-0.47)
+Retail: BEARISH (-0.51)
+Software: BEARISH (-0.63)
+Leveraged Index: BEARISH (-1.05)
+Biotech: BEARISH (-1.06)
+Consumer Staples: BEARISH (-2.08)
+Auto Retail: BEARISH (-7.48)
