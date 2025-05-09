@@ -66,6 +66,10 @@ def analyze_overnight_changes(evening_df, morning_df):
     # Sort from most bullish to most bearish
     ticker_summary = ticker_summary.sort_values('normalized_score', ascending=False)
     
+    # Scale the normalized scores to match the original scale
+    scaling_factor = 100  # Adjust this value if needed
+    ticker_summary['normalized_score'] = ticker_summary['normalized_score'] * scaling_factor
+
     return merged, ticker_summary, volume_factor
 
 def analyze_daily_changes(previous_day_df, current_day_df):
@@ -131,4 +135,8 @@ def analyze_daily_changes(previous_day_df, current_day_df):
     # Sort from most bullish to most bearish
     ticker_summary = ticker_summary.sort_values('normalized_score', ascending=False)
     
+    # Scale the normalized scores to match the original scale
+    scaling_factor = 100  # Adjust this value if needed
+    ticker_summary['normalized_score'] = ticker_summary['normalized_score'] * scaling_factor
+
     return merged, ticker_summary, volume_factor
