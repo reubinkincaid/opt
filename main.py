@@ -24,22 +24,117 @@ from datetime import datetime
 import pandas as pd
 
 # Import modules
-from data_collection import process_ticker, prepare_for_parquet, save_raw_options_data
+from data_collection import process_ticker, prepare_for_parquet
 from utils import DEFAULT_TICKERS
 from gamma_analysis import calculate_gamma_flip
 from volatility_analysis import analyze_skew
 from sentiment_analysis import analyze_overnight_changes, analyze_daily_changes
 from dashboard import create_overnight_dashboard, create_daily_dashboard
 
+def get_nested_folder_path(date=None, run_type=None, base_dir='options_data'):
+    """Create nested folder structure: month/week/day/run_type"""
+    if date is None:
+        date = datetime.now()
+    elif isinstance(date, str):
+        date = datetime.strptime(date, '%Y-%m-%d')
+        
+    if run_type is None:
+        run_type = "evening" if (date.hour >= 20 or date.hour < 4) else "morning"
+    
+    # Extract date components
+    month_folder = date.strftime('%Y-%m')
+    week_folder = f"W{date.strftime('%W')}"  # Week number (00-53)
+    day_folder = date.strftime('%Y-%m-%d')
+    
+    # Build the nested path
+    nested_path = os.path.join(
+        base_dir,
+        month_folder,
+        week_folder,
+        day_folder,
+        run_type
+    )
+    
+    # Create all directories in the path
+    os.makedirs(nested_path, exist_ok=True)
+    
+    return {
+        'path': nested_path,
+        'month': month_folder,
+        'week': week_folder,
+        'day': day_folder,
+        'run_type': run_type,
+        'date_str': day_folder  # For compatibility
+    }
+
+def save_raw_options_data(ticker_data, folder_path):
+    """
+    Save raw options data before any processing
+    
+    Args:
+        ticker_data (dict): Dictionary containing raw options data by ticker
+        folder_path (str): Path to the folder where the file will be saved
+        
+    Returns:
+        str: Path to the saved file
+    """
+    # Create a DataFrame from the raw data
+    raw_data = []
+    timestamp = datetime.now().strftime('%Y-%m-%d')
+    run_type = os.path.basename(folder_path)  # Extract from folder path
+    
+    for ticker, data in ticker_data.items():
+        for exp_date, options in data.items():
+            if 'calls' in options and not options['calls'].empty:
+                df_calls = options['calls'].copy()
+                df_calls['ticker'] = ticker
+                df_calls['expiration'] = exp_date
+                df_calls['option_type'] = 'call'
+                df_calls['timestamp'] = timestamp
+                df_calls['run_type'] = run_type
+                df_calls['underlying_price'] = options.get('spot', None)
+                df_calls['prev_close'] = options.get('prev_close', None)
+                raw_data.append(df_calls)
+            
+            if 'puts' in options and not options['puts'].empty:
+                df_puts = options['puts'].copy()
+                df_puts['ticker'] = ticker
+                df_puts['expiration'] = exp_date
+                df_puts['option_type'] = 'put'
+                df_puts['timestamp'] = timestamp
+                df_puts['run_type'] = run_type
+                df_puts['underlying_price'] = options.get('spot', None)
+                df_puts['prev_close'] = options.get('prev_close', None)
+                raw_data.append(df_puts)
+    
+    # Combine all data and prepare for parquet
+    if raw_data:
+        combined_df = pd.concat(raw_data)
+        combined_df = prepare_for_parquet(combined_df)
+        
+        # Save to parquet with simplified name
+        filepath = os.path.join(folder_path, 'raw_options.parquet')
+        combined_df.to_parquet(filepath)
+        return filepath
+    
+    return None
+
 def run_automated_data_collection():
     """
     Automated pipeline for scheduled execution
     """
     # Determine if this is a morning or evening run based on current time
-    current_hour = datetime.now().hour
+    current_date = datetime.now()
+    current_hour = current_date.hour
     run_type = "evening" if (current_hour >= 20 or current_hour < 4) else "morning"
     
+    # Get nested folder path
+    folder_info = get_nested_folder_path(current_date, run_type)
+    folder_path = folder_info['path']
+    date_str = folder_info['date_str']
+    
     print(f"Starting automated {run_type} run at {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+    print(f"Saving data to: {folder_path}")
     
     # Fixed settings for automated runs
     batch_size = 10  # Process tickers in batches to avoid API issues
@@ -106,28 +201,15 @@ def run_automated_data_collection():
             else:
                 print(f"✗ {ticker} failed")
     
-    # Prepare directory
-    os.makedirs('options_data', exist_ok=True)
-    date_str = datetime.now().strftime('%Y-%m-%d')
-    
     # Save raw data
     if all_raw_data:
-        timestamp = date_str
-        raw_data_file = save_raw_options_data(all_raw_data, timestamp, run_type)
+        raw_data_file = save_raw_options_data(all_raw_data, folder_path)
         print(f"Raw options data saved to {raw_data_file}")
         
     # Output for gamma flip
     if gamma_results:
         output = ';'.join(gamma_results)
-        gamma_file = f'options_data/tradingview_{date_str}_{run_type}.txt'
-        with open(gamma_file, 'w') as f:
-            f.write(output)
-        print(f"Gamma Flip Analysis saved to {gamma_file}")
-    
-    # Output for gamma flip
-    if gamma_results:
-        output = ';'.join(gamma_results)
-        gamma_file = f'options_data/tradingview_{date_str}_{run_type}.txt'
+        gamma_file = os.path.join(folder_path, 'gamma_flip.txt')
         with open(gamma_file, 'w') as f:
             f.write(output)
         print(f"Gamma Flip Analysis saved to {gamma_file}")
@@ -138,77 +220,85 @@ def run_automated_data_collection():
         combined_df = prepare_for_parquet(combined_df)
         
         # Save combined data
-        filename = f'options_data/vol_surface_{date_str}_{run_type}.parquet'
-        combined_df.to_parquet(filename)
-        print(f"Volatility Surface data saved to {filename}")
+        vol_surface_file = os.path.join(folder_path, 'vol_surface.parquet')
+        combined_df.to_parquet(vol_surface_file)
+        print(f"Volatility Surface data saved to {vol_surface_file}")
         
         # For morning runs, try to find and compare with previous evening data (Overnight Analysis)
         if run_type == "morning":
-            # Look for previous evening data file
-            prev_date = date_str
+            # Determine previous evening's date
+            prev_date = current_date
             if current_hour < 12:  # If it's morning, look for yesterday's evening data
-                prev_date = (datetime.now() - pd.Timedelta(days=1)).strftime('%Y-%m-%d')
+                prev_date = current_date - pd.Timedelta(days=1)
             
-            evening_files = [f for f in os.listdir('options_data') 
-                           if f.startswith(f'vol_surface_{prev_date}') and 'evening' in f and f.endswith('.parquet')]
+            # Get path to previous evening data
+            prev_evening_info = get_nested_folder_path(prev_date, "evening")
+            prev_evening_path = prev_evening_info['path']
+            prev_evening_file = os.path.join(prev_evening_path, 'vol_surface.parquet')
             
-            if evening_files:
-                latest_evening_file = sorted(evening_files)[-1]  # Get the most recent evening file
-                print(f"Found previous evening data: {latest_evening_file}")
+            if os.path.exists(prev_evening_file):
+                print(f"Found previous evening data: {prev_evening_file}")
                 
                 try:
-                    evening_df = pd.read_parquet(os.path.join('options_data', latest_evening_file))
+                    evening_df = pd.read_parquet(prev_evening_file)
                     
                     print("Analyzing overnight changes...")
                     merged_data, summary, volume_factor = analyze_overnight_changes(evening_df, combined_df)
                     
                     # Create and save dashboard
-                    dashboard_file = f'options_data/overnight_sentiment_dashboard_{date_str}.txt'
+                    dashboard_file = os.path.join(folder_path, 'overnight_sentiment_dashboard.txt')
                     create_overnight_dashboard(summary, dashboard_file)
                     
                     # Save detailed analysis
-                    merged_data.to_parquet(f'options_data/overnight_analysis_{date_str}.parquet')
-                    summary.to_csv(f'options_data/overnight_sentiment_summary_{date_str}.csv')
+                    merged_data_file = os.path.join(folder_path, 'overnight_analysis.parquet')
+                    merged_data.to_parquet(merged_data_file)
+                    
+                    summary_file = os.path.join(folder_path, 'overnight_sentiment_summary.csv')
+                    summary.to_csv(summary_file)
                     
                 except Exception as e:
                     print(f"Error comparing with evening data: {e}")
             else:
-                print("No evening data found for comparison")
+                print(f"No evening data found for comparison at: {prev_evening_file}")
         
         # For evening runs, try to find and compare with previous day's evening data (Daily Analysis)
         if run_type == "evening":
             # Look for previous day's evening data file
-            prev_date = (datetime.now() - pd.Timedelta(days=1)).strftime('%Y-%m-%d')
+            prev_date = current_date - pd.Timedelta(days=1)
             
-            prev_evening_files = [f for f in os.listdir('options_data') 
-                               if f.startswith(f'vol_surface_{prev_date}') and 'evening' in f and f.endswith('.parquet')]
+            # Get path to previous day's evening data
+            prev_evening_info = get_nested_folder_path(prev_date, "evening")
+            prev_evening_path = prev_evening_info['path']
+            prev_evening_file = os.path.join(prev_evening_path, 'vol_surface.parquet')
             
-            if prev_evening_files:
-                latest_prev_evening_file = sorted(prev_evening_files)[-1]  # Get the most recent evening file from previous day
-                print(f"Found previous day's evening data: {latest_prev_evening_file}")
+            if os.path.exists(prev_evening_file):
+                print(f"Found previous day's evening data: {prev_evening_file}")
                 
                 try:
-                    prev_evening_df = pd.read_parquet(os.path.join('options_data', latest_prev_evening_file))
+                    prev_evening_df = pd.read_parquet(prev_evening_file)
                     
                     print("Analyzing day-to-day changes...")
                     daily_merged_data, daily_summary, daily_volume_factor = analyze_daily_changes(prev_evening_df, combined_df)
                     
                     # Create and save dashboard
-                    daily_dashboard_file = f'options_data/daily_sentiment_dashboard_{date_str}.txt'
+                    daily_dashboard_file = os.path.join(folder_path, 'daily_sentiment_dashboard.txt')
                     create_daily_dashboard(daily_summary, daily_dashboard_file)
                     
                     # Save detailed analysis
-                    daily_merged_data.to_parquet(f'options_data/daily_analysis_{date_str}.parquet')
-                    daily_summary.to_csv(f'options_data/daily_sentiment_summary_{date_str}.csv')
+                    daily_merged_file = os.path.join(folder_path, 'daily_analysis.parquet')
+                    daily_merged_data.to_parquet(daily_merged_file)
+                    
+                    daily_summary_file = os.path.join(folder_path, 'daily_sentiment_summary.csv')
+                    daily_summary.to_csv(daily_summary_file)
                     
                 except Exception as e:
                     print(f"Error comparing with previous day's evening data: {e}")
             else:
-                print("No previous day's evening data found for comparison")
+                print(f"No previous day's evening data found at: {prev_evening_file}")
         
         print(f"Analyzing volatility skew...")
         skew_df = analyze_skew(combined_df)
-        skew_file = f'options_data/skew_analysis_{date_str}_{run_type}.csv'
+        skew_file = os.path.join(folder_path, 'skew_analysis.csv')
         skew_df.to_csv(skew_file)
         print(f"Skew Analysis saved to {skew_file}")
     

@@ -62,6 +62,7 @@ def analyze_overnight_changes(evening_df, morning_df):
     # Normalize by open interest
     ticker_summary['normalized_score'] = ticker_summary['weighted_score'] / ticker_summary['openInterest_evening']
     ticker_summary['sentiment'] = np.where(ticker_summary['normalized_score'] > 0, 'BULLISH', 'BEARISH')
+    ticker_summary['normalized_score'] = ticker_summary['normalized_score'] * 100
     
     # Sort from most bullish to most bearish
     ticker_summary = ticker_summary.sort_values('normalized_score', ascending=False)
@@ -131,6 +132,7 @@ def analyze_daily_changes(previous_day_df, current_day_df):
     # Normalize by open interest
     ticker_summary['normalized_score'] = ticker_summary['weighted_score'] / ticker_summary['openInterest_previous']
     ticker_summary['sentiment'] = np.where(ticker_summary['normalized_score'] > 0, 'BULLISH', 'BEARISH')
+    ticker_summary['normalized_score'] = ticker_summary['normalized_score'] * 100
     
     # Sort from most bullish to most bearish
     ticker_summary = ticker_summary.sort_values('normalized_score', ascending=False)
