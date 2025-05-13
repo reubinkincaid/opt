@@ -32,7 +32,7 @@ from sentiment_analysis import analyze_overnight_changes, analyze_daily_changes
 from dashboard import create_overnight_dashboard, create_daily_dashboard
 
 def get_nested_folder_path(date=None, run_type=None, base_dir='options_data'):
-    """Create nested folder structure: month/week/day/run_type"""
+    """Create nested folder structure: year/month/week/day/run_type"""
     if date is None:
         date = datetime.now()
     elif isinstance(date, str):
@@ -42,29 +42,32 @@ def get_nested_folder_path(date=None, run_type=None, base_dir='options_data'):
         run_type = "evening" if (date.hour >= 20 or date.hour < 4) else "morning"
     
     # Extract date components
-    month_folder = date.strftime('%Y-%m')
+    year_folder = date.strftime('%Y')
+    month_folder = date.strftime('%m')  # Just month number
     week_folder = f"W{date.strftime('%W')}"  # Week number (00-53)
-    day_folder = date.strftime('%Y-%m-%d')
+    day_folder = date.strftime('%d')  # Just day number
     
     # Build the nested path
     nested_path = os.path.join(
         base_dir,
+        year_folder,
         month_folder,
         week_folder,
         day_folder,
         run_type
     )
     
-    # Create all directories in the path
+    # Create all directories in the pathß
     os.makedirs(nested_path, exist_ok=True)
     
     return {
         'path': nested_path,
+        'year': year_folder,
         'month': month_folder,
         'week': week_folder,
         'day': day_folder,
         'run_type': run_type,
-        'date_str': day_folder  # For compatibility
+        'date_str': date.strftime('%Y-%m-%d')  # Keep this for compatibility
     }
 
 def save_raw_options_data(ticker_data, folder_path):
