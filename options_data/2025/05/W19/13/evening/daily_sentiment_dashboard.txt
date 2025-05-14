@@ -1,0 +1,49 @@
+DAILY SENTIMENT DASHBOARD
+
+Overall Market: BULLISH (0.25)
+
+Top Bullish:
+XLY: 227.02
+ROKU: 110.76
+SGMO: 59.56
+DIA: 43.70
+GS: 41.35
+
+Top Bearish:
+CPRT: -447.56
+CAVA: -35.56
+SPHR: -23.40
+SPY: -8.99
+XLB: -8.70
+
+Sector Sentiment:
+Consumer Discretionary: BULLISH (227.02)
+Index: BULLISH (10.78)
+Financials: BULLISH (9.89)
+Technology: BULLISH (9.32)
+Biotech: BULLISH (7.53)
+Software: BULLISH (5.50)
+Leveraged Index: BULLISH (3.33)
+Services: BULLISH (2.65)
+Industrials: BULLISH (1.30)
+Clean Energy: BULLISH (0.89)
+Semiconductor: BULLISH (0.18)
+Utilities: BULLISH (0.11)
+Social Media: BEARISH (0.00)
+Rideshare: BEARISH (0.00)
+Real Estate: BEARISH (0.00)
+Other: BEARISH (0.00)
+eVTOL: BEARISH (0.00)
+EV: BEARISH (0.00)
+Consumer Staples: BEARISH (0.00)
+Automotive Tech: BEARISH (0.00)
+Entertainment: BEARISH (-0.13)
+Energy: BEARISH (-0.38)
+Healthcare: BEARISH (-1.45)
+Retail: BEARISH (-1.52)
+Crypto: BEARISH (-2.71)
+Consumer Goods: BEARISH (-6.80)
+Auto Retail: BEARISH (-7.42)
+Materials: BEARISH (-8.70)
+Restaurant: BEARISH (-35.56)
+Auto Services: BEARISH (-447.56)
