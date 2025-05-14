@@ -1,0 +1,49 @@
+OVERNIGHT SENTIMENT DASHBOARD
+
+Overall Market: BULLISH (96.27)
+
+Top Bullish:
+FSLR: 21289.28
+SPHR: 562.34
+NOW: 488.28
+RBLX: 96.67
+ACHR: 90.41
+
+Top Bearish:
+PDYN: -213.41
+DIA: -90.15
+IWM: -43.87
+SRPT: -41.00
+COST: -15.84
+
+Sector Sentiment:
+Clean Energy: BULLISH (7096.03)
+Software: BULLISH (116.99)
+eVTOL: BULLISH (47.68)
+Technology: BULLISH (46.19)
+Services: BULLISH (27.01)
+Industrials: BULLISH (21.74)
+Crypto: BULLISH (16.62)
+EV: BULLISH (9.16)
+Auto Retail: BULLISH (5.81)
+Financials: BULLISH (5.51)
+Leveraged Index: BULLISH (3.48)
+Consumer Discretionary: BULLISH (1.84)
+Semiconductor: BULLISH (1.01)
+Materials: BULLISH (0.72)
+Social Media: BULLISH (0.65)
+Rideshare: BULLISH (0.27)
+Other: BULLISH (0.16)
+Restaurant: BEARISH (0.00)
+Consumer Goods: BEARISH (0.00)
+Auto Services: BEARISH (0.00)
+Automotive Tech: BEARISH (0.00)
+Entertainment: BEARISH (0.00)
+Real Estate: BEARISH (0.00)
+Energy: BEARISH (-0.05)
+Consumer Staples: BEARISH (-0.43)
+Utilities: BEARISH (-0.45)
+Healthcare: BEARISH (-3.41)
+Biotech: BEARISH (-5.87)
+Retail: BEARISH (-15.84)
+Index: BEARISH (-32.98)
