@@ -2,10 +2,12 @@ name: Options Data Collection
 
 on:
   schedule:
-    # 8:00 PM EST (0:00 UTC)
-    - cron: '0 0 * * 1-5'
-    # 9:20 AM EST (13:20 UTC)
-    - cron: '20 13 * * 1-5'
+    # Target: 8:00 PM EST (0:00 UTC) - Set 30 minutes earlier to account for delays
+    - cron: '30 23 * * 1-5'  # 7:30 PM EST (23:30 UTC)
+    
+    # Target: 9:20 AM EST (13:20 UTC) - Set 30 minutes earlier to account for delays
+    - cron: '50 12 * * 1-5'  # 8:50 AM EST (12:50 UTC)
+  
   workflow_dispatch:  # Allow manual trigger
 
 jobs:
@@ -20,6 +22,15 @@ jobs:
       uses: actions/setup-python@v2
       with:
         python-version: '3.13'
+        
+    # Add the caching step here, between Python setup and dependency installation
+    - name: Cache pip dependencies
+      uses: actions/cache@v3
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-
         
     - name: Install dependencies
       run: |

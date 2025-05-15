@@ -4,9 +4,85 @@ import pandas as pd
 import numpy as np
 import yfinance as yf
 from datetime import datetime
+import time
+import random
+from functools import wraps
 
 from gamma_analysis import calculate_gamma_flip
 
+# Add the retry decorator
+def retry_with_backoff(retries=5, backoff_factor=0.5, errors=(Exception,)):
+    """
+    Retry decorator with exponential backoff
+    
+    Args:
+        retries: Number of times to retry
+        backoff_factor: How much to backoff (exponentially)
+        errors: Tuple of exceptions to catch
+    """
+    def decorator(f):
+        @wraps(f)
+        def wrapper(*args, **kwargs):
+            x = 0
+            while True:
+                try:
+                    return f(*args, **kwargs)
+                except errors as e:
+                    if x == retries:
+                        raise
+                    
+                    # Calculate sleep time with jitter
+                    sleep_time = backoff_factor * (2 ** x) + random.uniform(0, 0.5)
+                    print(f"Retry {x+1}/{retries} after error: {str(e)}. Sleeping for {sleep_time:.2f}s")
+                    time.sleep(sleep_time)
+                    x += 1
+        return wrapper
+    return decorator
+
+# Helper function with retry for fetching ticker data
+@retry_with_backoff(retries=3, backoff_factor=1, errors=(Exception,))
+def fetch_ticker_data(ticker):
+    """
+    Fetch ticker data with retry logic
+    
+    Args:
+        ticker (str): The ticker symbol
+        
+    Returns:
+        yfinance.Ticker: Ticker data object
+    """
+    return yf.Ticker(ticker)
+
+@retry_with_backoff(retries=3, backoff_factor=1, errors=(Exception,))
+def fetch_ticker_history(ticker_obj, period="2d"):
+    """
+    Fetch ticker price history with retry logic
+    
+    Args:
+        ticker_obj: yfinance.Ticker object
+        period (str): Period to fetch
+        
+    Returns:
+        DataFrame: Price history
+    """
+    return ticker_obj.history(period=period)
+
+@retry_with_backoff(retries=3, backoff_factor=1, errors=(Exception,))
+def fetch_option_chain(ticker_obj, expiry):
+    """
+    Fetch option chain for a specific expiry with retry logic
+    
+    Args:
+        ticker_obj: yfinance.Ticker object
+        expiry (str): Option expiry date
+        
+    Returns:
+        tuple: (calls, puts) DataFrames
+    """
+    opt = ticker_obj.option_chain(expiry)
+    return opt.calls, opt.puts
+
+# Now modify the process_ticker function to use these retry-enabled functions
 def process_ticker(ticker, index=None, total=None, run_gamma=True, run_vol=True, collect_raw=True):
     """
     Process a single ticker to collect gamma flip and volatility surface data
@@ -25,11 +101,11 @@ def process_ticker(ticker, index=None, total=None, run_gamma=True, run_vol=True,
     print(f"Processing {ticker}" + (f" [{index}/{total}]" if index and total else ""))
     
     try:
-        # Fetch data once from yfinance API
-        data = yf.Ticker(ticker)
+        # Fetch data once from yfinance API with retry
+        data = fetch_ticker_data(ticker)
         
-        # Get spot price
-        hist = data.history(period="2d")
+        # Get spot price with retry
+        hist = fetch_ticker_history(data, period="2d")
         if hist.empty:
             print(f"No price data for {ticker}")
             return None, None, None
@@ -59,8 +135,8 @@ def process_ticker(ticker, index=None, total=None, run_gamma=True, run_vol=True,
         
         for exp in expiries:
             try:
-                opt = data.option_chain(exp)
-                calls, puts = opt.calls, opt.puts
+                # Fetch option chain with retry
+                calls, puts = fetch_option_chain(data, exp)
                 
                 # Store raw data if requested
                 if collect_raw:
@@ -94,8 +170,13 @@ def process_ticker(ticker, index=None, total=None, run_gamma=True, run_vol=True,
             
             for exp in expiries:
                 try:
-                    opt = data.option_chain(exp)
-                    calls, puts = opt.calls, opt.puts
+                    # We already fetched the option chain above, so reuse it from raw_data if available
+                    if collect_raw and exp in raw_data[ticker]:
+                        calls = raw_data[ticker][exp]['calls']
+                        puts = raw_data[ticker][exp]['puts']
+                    else:
+                        # If not available, fetch it again with retry
+                        calls, puts = fetch_option_chain(data, exp)
                     
                     exp_date = datetime.strptime(exp, '%Y-%m-%d')
                     dte = (exp_date - today_dt).days
@@ -141,6 +222,7 @@ def process_ticker(ticker, index=None, total=None, run_gamma=True, run_vol=True,
         print(f"Error processing {ticker}: {e}")
         return None, None, None
 
+# Rest of the file remains unchanged
 def prepare_for_parquet(df):
     """
     Fix dataframe columns for parquet compatibility
