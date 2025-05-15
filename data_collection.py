@@ -83,7 +83,7 @@ def fetch_option_chain(ticker_obj, expiry):
     return opt.calls, opt.puts
 
 # Now modify the process_ticker function to use these retry-enabled functions
-def process_ticker(ticker, index=None, total=None, run_gamma=True, run_vol=True, collect_raw=True):
+def process_ticker(ticker, index=None, total=None, run_gamma=True, run_vol=True, collect_raw=True, trading_date=None):
     """
     Process a single ticker to collect gamma flip and volatility surface data
     
@@ -94,11 +94,16 @@ def process_ticker(ticker, index=None, total=None, run_gamma=True, run_vol=True,
         run_gamma (bool): Whether to run gamma flip analysis
         run_vol (bool): Whether to run volatility surface analysis
         collect_raw (bool): Whether to collect and return raw options data
+        trading_date (datetime, optional): Trading session date
         
     Returns:
         tuple: (gamma_result, vol_surface_df, raw_data)
     """
     print(f"Processing {ticker}" + (f" [{index}/{total}]" if index and total else ""))
+    
+    # If trading_date is not provided, use current date
+    if trading_date is None:
+        trading_date = datetime.now()
     
     try:
         # Fetch data once from yfinance API with retry
@@ -144,7 +149,8 @@ def process_ticker(ticker, index=None, total=None, run_gamma=True, run_vol=True,
                         'calls': calls.copy(),
                         'puts': puts.copy(),
                         'spot': spot,
-                        'prev_close': prev_close
+                        'prev_close': prev_close,
+                        'trading_date': trading_date.strftime('%Y-%m-%d')  # Add trading date
                     }
                 
                 if not calls.empty and not puts.empty:
@@ -166,7 +172,6 @@ def process_ticker(ticker, index=None, total=None, run_gamma=True, run_vol=True,
         vol_surface_df = None
         if run_vol:
             vol_surface_data = []
-            today_dt = datetime.now()
             
             for exp in expiries:
                 try:
@@ -179,7 +184,7 @@ def process_ticker(ticker, index=None, total=None, run_gamma=True, run_vol=True,
                         calls, puts = fetch_option_chain(data, exp)
                     
                     exp_date = datetime.strptime(exp, '%Y-%m-%d')
-                    dte = (exp_date - today_dt).days
+                    dte = (exp_date - trading_date).days
                     
                     if dte < 0:
                         continue
@@ -206,8 +211,9 @@ def process_ticker(ticker, index=None, total=None, run_gamma=True, run_vol=True,
             
             if vol_surface_data:
                 vol_surface_df = pd.concat(vol_surface_data)
-                vol_surface_df['date'] = datetime.now().strftime('%Y-%m-%d')
+                vol_surface_df['date'] = trading_date.strftime('%Y-%m-%d')
                 vol_surface_df['timestamp'] = datetime.now().strftime('%H:%M:%S')
+                vol_surface_df['trading_date'] = trading_date.strftime('%Y-%m-%d')
                 vol_surface_df['underlying_price'] = price
                 vol_surface_df['ticker'] = ticker
                 
@@ -222,7 +228,6 @@ def process_ticker(ticker, index=None, total=None, run_gamma=True, run_vol=True,
         print(f"Error processing {ticker}: {e}")
         return None, None, None
 
-# Rest of the file remains unchanged
 def prepare_for_parquet(df):
     """
     Fix dataframe columns for parquet compatibility
@@ -249,7 +254,7 @@ def prepare_for_parquet(df):
     
     return df
 
-def save_raw_options_data(ticker_data, timestamp, run_type):
+def save_raw_options_data(ticker_data, timestamp, run_type, trading_date=None):
     """
     Save raw options data before any processing
     
@@ -257,12 +262,19 @@ def save_raw_options_data(ticker_data, timestamp, run_type):
         ticker_data (dict): Dictionary containing raw options data by ticker
         timestamp (str): Timestamp string for the filename
         run_type (str): 'morning' or 'evening'
+        trading_date (datetime, optional): Trading session date
         
     Returns:
         str: Path to the saved file
     """
     # Create a DataFrame from the raw data
     raw_data = []
+    
+    # Use provided trading_date or current date
+    if trading_date is None:
+        trading_date = datetime.now()
+        
+    trading_date_str = trading_date.strftime('%Y-%m-%d')
     
     for ticker, data in ticker_data.items():
         for exp_date, options in data.items():
@@ -273,6 +285,7 @@ def save_raw_options_data(ticker_data, timestamp, run_type):
                 df_calls['option_type'] = 'call'
                 df_calls['timestamp'] = timestamp
                 df_calls['run_type'] = run_type
+                df_calls['trading_date'] = trading_date_str
                 df_calls['underlying_price'] = options.get('spot', None)
                 df_calls['prev_close'] = options.get('prev_close', None)
                 raw_data.append(df_calls)
@@ -284,6 +297,7 @@ def save_raw_options_data(ticker_data, timestamp, run_type):
                 df_puts['option_type'] = 'put'
                 df_puts['timestamp'] = timestamp
                 df_puts['run_type'] = run_type
+                df_puts['trading_date'] = trading_date_str
                 df_puts['underlying_price'] = options.get('spot', None)
                 df_puts['prev_close'] = options.get('prev_close', None)
                 raw_data.append(df_puts)
@@ -293,8 +307,8 @@ def save_raw_options_data(ticker_data, timestamp, run_type):
         combined_df = pd.concat(raw_data)
         combined_df = prepare_for_parquet(combined_df)
         
-        # Save to parquet
-        filepath = f'options_data/raw_options_{timestamp}_{run_type}.parquet'
+        # Save to parquet - use trading date in filename
+        filepath = f'options_data/raw_options_{trading_date_str}_{run_type}.parquet'
         combined_df.to_parquet(filepath)
         return filepath
     
