@@ -1,0 +1,49 @@
+DAILY SENTIMENT DASHBOARD
+
+Overall Market: BULLISH (93562.26)
+
+Top Bullish:
+RDDT: 2455987.63
+AMD: 678876.15
+GOOGL: 412730.52
+CVNA: 265860.66
+NVDA: 218360.52
+
+Top Bearish:
+XLV: -130455.67
+TCMD: -43795.36
+COST: -30446.00
+MRNA: -29623.89
+MSTR: -28750.90
+
+Sector Sentiment:
+Social Media: BULLISH (2455987.63)
+Auto Retail: BULLISH (265860.66)
+Semiconductor: BULLISH (221277.54)
+EV: BULLISH (212130.07)
+eVTOL: BULLISH (108823.36)
+Technology: BULLISH (56211.92)
+Entertainment: BULLISH (43959.61)
+Software: BULLISH (23308.44)
+Rideshare: BULLISH (15680.69)
+Financials: BULLISH (13218.55)
+Leveraged Index: BULLISH (11967.77)
+Consumer Discretionary: BULLISH (10461.96)
+Clean Energy: BULLISH (5222.08)
+Index: BULLISH (4201.76)
+Services: BEARISH (-139.65)
+Restaurant: BEARISH (-782.79)
+Auto Services: BEARISH (-1084.14)
+Real Estate: BEARISH (-1472.50)
+Automotive Tech: BEARISH (-1575.25)
+Consumer Goods: BEARISH (-2037.68)
+Energy: BEARISH (-4379.02)
+Industrials: BEARISH (-6567.84)
+Materials: BEARISH (-9687.16)
+Biotech: BEARISH (-13426.42)
+Consumer Staples: BEARISH (-13734.95)
+Utilities: BEARISH (-14740.30)
+Other: BEARISH (-18099.42)
+Crypto: BEARISH (-19208.13)
+Retail: BEARISH (-30446.00)
+Healthcare: BEARISH (-87125.51)
