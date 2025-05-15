@@ -1,0 +1,49 @@
+OVERNIGHT SENTIMENT DASHBOARD
+
+Overall Market: BULLISH (93585.19)
+
+Top Bullish:
+RDDT: 2463150.24
+AMD: 678910.90
+GOOGL: 412738.27
+CVNA: 265894.78
+NVDA: 218360.68
+
+Top Bearish:
+XLV: -130883.66
+TCMD: -43795.36
+COST: -30446.00
+MRNA: -29624.04
+MSTR: -28748.73
+
+Sector Sentiment:
+Social Media: BULLISH (2463150.24)
+Auto Retail: BULLISH (265894.78)
+Semiconductor: BULLISH (221286.86)
+EV: BULLISH (212130.46)
+eVTOL: BULLISH (108824.30)
+Technology: BULLISH (56213.61)
+Entertainment: BULLISH (43959.61)
+Software: BULLISH (23332.59)
+Rideshare: BULLISH (15680.69)
+Financials: BULLISH (13222.78)
+Leveraged Index: BULLISH (11967.22)
+Consumer Discretionary: BULLISH (10475.79)
+Clean Energy: BULLISH (5222.94)
+Index: BULLISH (4208.62)
+Services: BEARISH (-150.07)
+Restaurant: BEARISH (-787.74)
+Auto Services: BEARISH (-1084.14)
+Real Estate: BEARISH (-1472.95)
+Automotive Tech: BEARISH (-1575.25)
+Consumer Goods: BEARISH (-2037.68)
+Energy: BEARISH (-4379.02)
+Industrials: BEARISH (-6566.88)
+Materials: BEARISH (-9687.16)
+Biotech: BEARISH (-13470.19)
+Consumer Staples: BEARISH (-13760.85)
+Utilities: BEARISH (-14738.16)
+Other: BEARISH (-18099.47)
+Crypto: BEARISH (-19207.46)
+Retail: BEARISH (-30446.00)
+Healthcare: BEARISH (-87339.51)
