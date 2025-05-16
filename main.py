@@ -170,6 +170,8 @@ def save_raw_options_data(ticker_data, folder_path, trading_date):
 def run_automated_data_collection():
     """
     Automated pipeline for scheduled execution
+    Args:
+    test_mode (bool): If True, save data to test folders instead of production
     """
     # Get the current time for logging purposes
     execution_time = datetime.now()
@@ -185,6 +187,15 @@ def run_automated_data_collection():
     folder_info = get_nested_folder_path(trading_date, run_type)
     folder_path = folder_info['path']
     date_str = folder_info['date_str']
+    
+    # If in test mode, modify the paths
+    if test_mode:
+        # Modify the base folder path to add a test indicator
+        folder_path = folder_path.replace('options_data', 'options_data_test')
+        print(f"RUNNING IN TEST MODE - Data will be saved to: {folder_path}")
+        
+        # Create the test directory if it doesn't exist
+        os.makedirs(folder_path, exist_ok=True)
     
     print(f"Starting automated {run_type} run at {execution_time.strftime('%Y-%m-%d %H:%M:%S')}")
     print(f"Trading session date: {date_str}")
@@ -203,7 +214,7 @@ def run_automated_data_collection():
     all_vol_surface_data = []
     failed_tickers = []
     all_raw_data = {}
-    price_data_list = []  # New list to collect price data
+    price_data_list = []
     
     # Process tickers in batches
     for i in range(0, len(DEFAULT_TICKERS), batch_size):
@@ -270,7 +281,8 @@ def run_automated_data_collection():
         price_df = pd.DataFrame(price_data_list)
         
         # Create a dedicated folder for price data
-        price_data_dir = os.path.join('options_data', year_folder)
+        base_dir = 'options_data_test' if test_mode else 'options_data'
+        price_data_dir = os.path.join(base_dir, year_folder)
         os.makedirs(price_data_dir, exist_ok=True)
         
         # Path to the consolidated price data file

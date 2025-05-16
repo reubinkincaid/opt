@@ -9,6 +9,12 @@ on:
     - cron: '50 12 * * 1-5'  # 8:50 AM EST (12:50 UTC)
   
   workflow_dispatch:  # Allow manual trigger
+    inputs:
+      test_mode:
+        description: 'Run in test mode'
+        required: false
+        default: 'false'
+        type: boolean
 
 jobs:
   collect-options-data:
@@ -42,7 +48,14 @@ jobs:
       run: mkdir -p options_data
       
     - name: Run Options Analysis Script
-      run: python main.py
+      run: |
+        if [[ "${{ github.event.inputs.test_mode }}" == "true" ]]; then
+          echo "Running in TEST MODE"
+          python -c "from main import run_automated_data_collection; run_automated_data_collection(test_mode=True)"
+        else
+          echo "Running in PRODUCTION MODE"
+          python main.py
+        fi
         
     - name: Commit and push changes
       run: |
