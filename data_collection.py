@@ -96,7 +96,7 @@ def fetch_option_chain(ticker_obj, expiry):
     return opt.calls, opt.puts
 
 # Now modify the process_ticker function to use these retry-enabled functions
-def process_ticker(ticker, index=None, total=None, run_gamma=True, run_vol=True, collect_raw=True, trading_date=None):
+def process_ticker(ticker, index=None, total=None, run_gamma=True, run_vol=True, collect_raw=True, trading_date=None, utils_module=None):
     """
     Process a single ticker to collect gamma flip and volatility surface data
     
@@ -108,12 +108,16 @@ def process_ticker(ticker, index=None, total=None, run_gamma=True, run_vol=True,
         run_vol (bool): Whether to run volatility surface analysis
         collect_raw (bool): Whether to collect and return raw options data
         trading_date (datetime, optional): Trading session date
+        utils_module (module, optional): Utils module to use (for testing)
         
     Returns:
         tuple: (gamma_result, vol_surface_df, raw_data, price_data)
     """
     # Import the statistical tickers list
-    from utils import STATISTICAL_TICKERS
+    if utils_module is None:
+        from utils import STATISTICAL_TICKERS
+    else:
+        STATISTICAL_TICKERS = utils_module.STATISTICAL_TICKERS
     
     print(f"Processing {ticker}" + (f" [{index}/{total}]" if index and total else ""))
     
