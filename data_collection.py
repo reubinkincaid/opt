@@ -1,5 +1,6 @@
 # data_collection.py - Handles fetching data from yfinance API
 
+import os
 import pandas as pd
 import numpy as np
 import yfinance as yf
@@ -251,7 +252,7 @@ def process_ticker(ticker, index=None, total=None, run_gamma=True, run_vol=True,
     except Exception as e:
         print(f"Error processing {ticker}: {e}")
         return None, None, None, None
-        
+
 def prepare_for_parquet(df):
     """
     Fix dataframe columns for parquet compatibility
