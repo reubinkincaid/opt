@@ -81,59 +81,78 @@ def build_options_master_database(
                 existing_dates.update(set(master_db['path_info']))
             else:
                 print("Warning: Existing database missing key columns for duplicate detection")
-
-            # Then, in the file processing section, update the duplicate detection code:
-
-            # Extract the folder path for more reliable duplication checking
-            path_info = date_info
-
-            # Check if this data already exists using multiple methods
-            is_duplicate = False
-
-            try:
-                # Method 1: Check using trading_date + run_type
-                if 'trading_date' in df.columns and 'run_type' in df.columns:
-                    sample_date = str(df['trading_date'].iloc[0])
-                    sample_run_type = df['run_type'].iloc[0]
-                    sample_key = f"{sample_date}_{sample_run_type}"
-                    
-                    if sample_key in existing_dates:
-                        print(f"Skipping already imported data (by date): {date_info}")
-                        is_duplicate = True
-            except Exception as e:
-                print(f"Warning: Could not check duplicate by date: {str(e)}")
-
-            # Method 2: Check using folder path
-            if not is_duplicate and path_info in existing_dates:
-                print(f"Skipping already imported data (by path): {date_info}")
-                is_duplicate = True
-
-            # Method 3: For new entries, extract year/month/day from path
-            # This is a fallback method for when direct comparison fails
-            if not is_duplicate:
+            
+            # Process all files and check for duplicates
+            new_data_frames = []
+            skipped_files = 0
+            
+            for file_path, date_info in all_files:
                 try:
-                    path_parts = date_info.split('/')
-                    if len(path_parts) >= 5:
-                        year, month, _, day, run_type = path_parts[-5:]
-                        date_str = f"{year}-{month}-{day}"
-                        path_key = f"{date_str}_{run_type}"
-                        
-                        if path_key in existing_dates:
-                            print(f"Skipping already imported data (by path date): {date_info}")
-                            is_duplicate = True
-            except Exception as e:
-                print(f"Warning: Could not extract date from path: {str(e)}")
-
-            if is_duplicate:
-                skipped_files += 1
-                continue
-
-            # Add path_info to the dataframe for future duplicate detection
-            df['path_info'] = path_info
-
-            print(f"Adding new data from: {date_info}")
-            new_data_frames.append(df)
+                    print(f"Checking {date_info}...")
+                    df = pd.read_parquet(file_path)
                     
+                    # Skip if empty
+                    if df.empty:
+                        print(f"Skipping empty file: {date_info}")
+                        continue
+                        
+                    # Apply run_type filter at the dataframe level as a failsafe
+                    if run_type_filter and 'run_type' in df.columns:
+                        df = df[df['run_type'] == run_type_filter]
+                        if df.empty:
+                            print(f"Skipping file after filtering: {date_info}")
+                            continue
+                    
+                    # Extract the folder path for more reliable duplication checking
+                    path_info = date_info
+
+                    # Check if this data already exists using multiple methods
+                    is_duplicate = False
+
+                    try:
+                        # Method 1: Check using trading_date + run_type
+                        if 'trading_date' in df.columns and 'run_type' in df.columns:
+                            sample_date = str(df['trading_date'].iloc[0])
+                            sample_run_type = df['run_type'].iloc[0]
+                            sample_key = f"{sample_date}_{sample_run_type}"
+                            
+                            if sample_key in existing_dates:
+                                print(f"Skipping already imported data (by date): {date_info}")
+                                is_duplicate = True
+                    except Exception as e:
+                        print(f"Warning: Could not check duplicate by date: {str(e)}")
+
+                    # Method 2: Check using folder path
+                    if not is_duplicate and path_info in existing_dates:
+                        print(f"Skipping already imported data (by path): {date_info}")
+                        is_duplicate = True
+
+                    # Method 3: For new entries, extract year/month/day from path
+                    # This is a fallback method for when direct comparison fails
+                    if not is_duplicate:
+                        try:
+                            path_parts = date_info.split('/')
+                            if len(path_parts) >= 5:
+                                year, month, _, day, run_type = path_parts[-5:]
+                                date_str = f"{year}-{month}-{day}"
+                                path_key = f"{date_str}_{run_type}"
+                                
+                                if path_key in existing_dates:
+                                    print(f"Skipping already imported data (by path date): {date_info}")
+                                    is_duplicate = True
+                        except Exception as e:
+                            print(f"Warning: Could not extract date from path: {str(e)}")
+
+                    if is_duplicate:
+                        skipped_files += 1
+                        continue
+
+                    # Add path_info to the dataframe for future duplicate detection
+                    df['path_info'] = path_info
+
+                    print(f"Adding new data from: {date_info}")
+                    new_data_frames.append(df)
+                        
                 except Exception as e:
                     print(f"Error processing {date_info}: {str(e)}")
             
