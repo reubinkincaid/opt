@@ -97,8 +97,11 @@ def process_ticker(ticker, index=None, total=None, run_gamma=True, run_vol=True,
         trading_date (datetime, optional): Trading session date
         
     Returns:
-        tuple: (gamma_result, vol_surface_df, raw_data)
+        tuple: (gamma_result, vol_surface_df, raw_data, price_data)
     """
+    # Import the statistical tickers list
+    from utils import STATISTICAL_TICKERS
+    
     print(f"Processing {ticker}" + (f" [{index}/{total}]" if index and total else ""))
     
     # If trading_date is not provided, use current date
@@ -113,7 +116,7 @@ def process_ticker(ticker, index=None, total=None, run_gamma=True, run_vol=True,
         hist = fetch_ticker_history(data, period="2d")
         if hist.empty:
             print(f"No price data for {ticker}")
-            return None, None, None
+            return None, None, None, None
             
         spot = hist['Close'].iloc[-1]
         price = spot
@@ -122,6 +125,27 @@ def process_ticker(ticker, index=None, total=None, run_gamma=True, run_vol=True,
         prev_close = None
         if len(hist) > 1:
             prev_close = hist['Close'].iloc[-2]
+        
+        # Create price data dictionary
+        price_data = {
+            'ticker': ticker,
+            'current_price': spot,
+            'prev_close': prev_close if prev_close is not None else None,
+            'price_change_pct': ((spot - prev_close) / prev_close * 100) if prev_close is not None else None,
+            'trading_date': trading_date.strftime('%Y-%m-%d'),
+            'timestamp': datetime.now().strftime('%H:%M:%S')
+        }
+        
+        # For statistical tickers, we're done - just return the price data
+        if ticker in STATISTICAL_TICKERS:
+            print(f"{ticker} is a statistical indicator - skipping options analysis")
+            return None, None, None, price_data
+        
+        # For regular tickers, continue with options processing
+        expiries = data.options
+        if not expiries:
+            print(f"No options data for {ticker}")
+            return None, None, None, price_data  # Still return price data even if no options
         
         # Get options data
         expiries = data.options
@@ -222,12 +246,12 @@ def process_ticker(ticker, index=None, total=None, run_gamma=True, run_vol=True,
                     vol_surface_df['prev_close'] = prev_close
                     vol_surface_df['price_change_pct'] = (price - prev_close) / prev_close * 100
         
-        return gamma_result, vol_surface_df, raw_data
+        return gamma_result, vol_surface_df, raw_data, price_data
         
     except Exception as e:
         print(f"Error processing {ticker}: {e}")
-        return None, None, None
-
+        return None, None, None, None
+        
 def prepare_for_parquet(df):
     """
     Fix dataframe columns for parquet compatibility

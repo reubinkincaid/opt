@@ -202,9 +202,8 @@ def run_automated_data_collection():
     gamma_results = []
     all_vol_surface_data = []
     failed_tickers = []
-    
-    # Add this line to collect raw data
     all_raw_data = {}
+    price_data_list = []  # New list to collect price data
     
     # Process tickers in batches
     for i in range(0, len(DEFAULT_TICKERS), batch_size):
@@ -218,8 +217,8 @@ def run_automated_data_collection():
             if j > 1:
                 time.sleep(delay)
             
-            # Process ticker - update to capture raw_data
-            gamma_result, vol_surface_df, raw_data = process_ticker(
+            # Process ticker - now captures price_data as the fourth return value
+            gamma_result, vol_surface_df, raw_data, ticker_price_data = process_ticker(
                 ticker, 
                 (i + j), 
                 len(DEFAULT_TICKERS), 
@@ -230,6 +229,10 @@ def run_automated_data_collection():
             # Store raw data if available
             if raw_data:
                 all_raw_data.update(raw_data)
+            
+            # Store price data if available
+            if ticker_price_data:
+                price_data_list.append(ticker_price_data)
             
             # Track results
             success = False
@@ -243,7 +246,6 @@ def run_automated_data_collection():
             # Handle volatility surface results
             if run_vol:
                 if vol_surface_df is not None:
-                    # Update vol_surface_df with trading date instead of current date
                     vol_surface_df['date'] = trading_date.strftime('%Y-%m-%d')
                     vol_surface_df['trading_date'] = trading_date.strftime('%Y-%m-%d')
                     vol_surface_df['run_type'] = run_type
@@ -251,14 +253,72 @@ def run_automated_data_collection():
                     all_vol_surface_data.append(vol_surface_df)
                     success = True
                 else:
-                    failed_tickers.append(ticker)
+                    # Only add to failed tickers if it's not a statistical ticker
+                    from utils import STATISTICAL_TICKERS
+                    if ticker not in STATISTICAL_TICKERS:
+                        failed_tickers.append(ticker)
             
             # Reporting
             elapsed = time.time() - start_time
-            if success:
+            if success or ticker in STATISTICAL_TICKERS:
                 print(f"✓ {ticker} completed in {elapsed:.2f} seconds")
             else:
                 print(f"✗ {ticker} failed")
+    
+    # Save statistical_indicator price data in a single parquet
+    if price_data_list:
+        price_df = pd.DataFrame(price_data_list)
+        
+        # Create a dedicated folder for price data
+        price_data_dir = os.path.join('options_data', year_folder)
+        os.makedirs(price_data_dir, exist_ok=True)
+        
+        # Path to the consolidated price data file
+        consolidated_price_file = os.path.join(price_data_dir, 'price_data_history.parquet')
+        
+        # If historical file exists, read it and append new data
+        if os.path.exists(consolidated_price_file):
+            try:
+                historical_price_df = pd.read_parquet(consolidated_price_file)
+                
+                # Check if we already have data for this trading date
+                existing_data = historical_price_df[
+                    (historical_price_df['trading_date'] == trading_date.strftime('%Y-%m-%d')) & 
+                    (historical_price_df['run_type'] == run_type)
+                ]
+                
+                if not existing_data.empty:
+                    print(f"Found existing price data for {trading_date.strftime('%Y-%m-%d')} {run_type} - replacing")
+                    # Remove existing data for this date/run_type
+                    historical_price_df = historical_price_df.loc[
+                        ~((historical_price_df['trading_date'] == trading_date.strftime('%Y-%m-%d')) & 
+                        (historical_price_df['run_type'] == run_type))
+                    ]
+                
+                # Add run_type to new data
+                price_df['run_type'] = run_type
+                
+                # Append new data
+                combined_price_df = pd.concat([historical_price_df, price_df])
+                combined_price_df.to_parquet(consolidated_price_file)
+                print(f"Updated historical price data saved to {consolidated_price_file}")
+                
+            except Exception as e:
+                print(f"Error updating historical price data: {e}")
+                # If error, just save today's data
+                price_df['run_type'] = run_type
+                price_df.to_parquet(consolidated_price_file)
+                print(f"New historical price data saved to {consolidated_price_file}")
+        else:
+            # No historical file exists yet, create it
+            price_df['run_type'] = run_type
+            price_df.to_parquet(consolidated_price_file)
+            print(f"New historical price data saved to {consolidated_price_file}")
+        
+        # Also save daily file in the nested structure for consistency
+        daily_price_file = os.path.join(folder_path, 'price_data.parquet')
+        price_df.to_parquet(daily_price_file)
+        print(f"Daily price data saved to {daily_price_file}")
     
     # Save raw data
     if all_raw_data:
@@ -333,7 +393,9 @@ def run_automated_data_collection():
             prev_evening_info = get_nested_folder_path(prev_date, "evening")
             prev_evening_path = prev_evening_info['path']
             prev_evening_file = os.path.join(prev_evening_path, 'vol_surface.parquet')
+            prev_price_file = os.path.join(prev_evening_path, 'price_data.parquet')
             
+            # Process options data for regular tickers
             if os.path.exists(prev_evening_file):
                 print(f"Found previous day's evening data: {prev_evening_file}")
                 
@@ -349,9 +411,8 @@ def run_automated_data_collection():
                     daily_summary['trading_date'] = trading_date.strftime('%Y-%m-%d')
                     daily_summary['prev_trading_date'] = prev_date.strftime('%Y-%m-%d')
                     
-                    # Create and save dashboard
-                    daily_dashboard_file = os.path.join(folder_path, 'daily_sentiment_dashboard.txt')
-                    create_daily_dashboard(daily_summary, daily_dashboard_file)
+                    # Store for later dashboard creation
+                    options_summary = daily_summary
                     
                     # Save detailed analysis
                     daily_merged_file = os.path.join(folder_path, 'daily_analysis.parquet')
@@ -362,8 +423,40 @@ def run_automated_data_collection():
                     
                 except Exception as e:
                     print(f"Error comparing with previous day's evening data: {e}")
+                    options_summary = None
             else:
                 print(f"No previous day's evening data found at: {prev_evening_file}")
+                options_summary = None
+            
+            # Process price data for statistical indicators
+            statistical_summary = None
+            if os.path.exists(price_file) and os.path.exists(prev_price_file):
+                print(f"Found previous day's price data: {prev_price_file}")
+                
+                try:
+                    from utils import STATISTICAL_TICKERS
+                    from sentiment_analysis import analyze_statistical_indicators
+                    
+                    prev_price_df = pd.read_parquet(prev_price_file)
+                    curr_price_df = pd.read_parquet(price_file)
+                    
+                    print("Analyzing statistical indicators...")
+                    statistical_summary = analyze_statistical_indicators(
+                        prev_price_df, curr_price_df, STATISTICAL_TICKERS
+                    )
+                    
+                    # Save statistical analysis
+                    stat_file = os.path.join(folder_path, 'statistical_analysis.csv')
+                    if statistical_summary is not None:
+                        statistical_summary.to_csv(stat_file)
+                        print(f"Statistical analysis saved to {stat_file}")
+                    
+                except Exception as e:
+                    print(f"Error analyzing statistical indicators: {e}")
+            
+            # Create combined dashboard
+            dashboard_file = os.path.join(folder_path, 'daily_sentiment_dashboard.txt')
+            create_daily_dashboard(options_summary, dashboard_file, statistical_summary)
         
         print(f"Analyzing volatility skew...")
         skew_df = analyze_skew(combined_df)

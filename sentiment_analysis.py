@@ -142,3 +142,67 @@ def analyze_daily_changes(previous_day_df, current_day_df):
     ticker_summary['normalized_score'] = ticker_summary['normalized_score'] * scaling_factor
 
     return merged, ticker_summary, volume_factor
+
+def analyze_statistical_indicators(prev_price_df, curr_price_df, statistical_tickers):
+    """
+    Analyze price changes for statistical indicators without options chains
+    
+    Args:
+        prev_price_df (DataFrame): Previous day's price data
+        curr_price_df (DataFrame): Current day's price data
+        statistical_tickers (list): List of statistical tickers to analyze
+        
+    Returns:
+        DataFrame: Analysis of statistical indicators
+    """
+    results = []
+    
+    for ticker in statistical_tickers:
+        # Get previous data
+        prev_data = prev_price_df[prev_price_df['ticker'] == ticker]
+        if prev_data.empty:
+            print(f"No previous data for {ticker}")
+            continue
+            
+        # Get current data
+        curr_data = curr_price_df[curr_price_df['ticker'] == ticker]
+        if curr_data.empty:
+            print(f"No current data for {ticker}")
+            continue
+        
+        # Extract values
+        prev_price = prev_data['current_price'].iloc[0]
+        curr_price = curr_data['current_price'].iloc[0]
+        
+        # Calculate change
+        abs_change = curr_price - prev_price
+        pct_change = (abs_change / prev_price) * 100 if prev_price != 0 else 0
+        
+        # Determine sentiment
+        # For these indicators, higher values are bullish (more stocks above MA)
+        sentiment = 'BULLISH' if abs_change > 0 else 'BEARISH'
+        
+        # For very small changes (e.g., <0.5%), consider it neutral
+        if abs(pct_change) < 0.5:
+            sentiment = 'NEUTRAL'
+        
+        # Create result row
+        result = {
+            'ticker': ticker,
+            'prev_value': prev_price,
+            'current_value': curr_price,
+            'abs_change': abs_change,
+            'pct_change': pct_change,
+            'sentiment': sentiment,
+            'indicator_type': 'Market Breadth',
+            'trading_date': curr_data['trading_date'].iloc[0],
+            'prev_trading_date': prev_data['trading_date'].iloc[0]
+        }
+        
+        results.append(result)
+    
+    # Convert to DataFrame
+    if results:
+        return pd.DataFrame(results)
+    else:
+        return None
