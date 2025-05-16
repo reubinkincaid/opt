@@ -41,7 +41,7 @@ def retry_with_backoff(retries=5, backoff_factor=0.5, errors=(Exception,)):
     return decorator
 
 # Helper function with retry for fetching ticker data
-@retry_with_backoff(retries=3, backoff_factor=1, errors=(Exception,))
+@retry_with_backoff(retries=5, backoff_factor=1.5, errors=(Exception,))
 def fetch_ticker_data(ticker):
     """
     Fetch ticker data with retry logic
@@ -52,7 +52,19 @@ def fetch_ticker_data(ticker):
     Returns:
         yfinance.Ticker: Ticker data object
     """
-    return yf.Ticker(ticker)
+    try:
+        ticker_obj = yf.Ticker(ticker)
+        
+        # Test that we can actually get data from this ticker
+        # by fetching a small amount of history
+        test_hist = ticker_obj.history(period="1d")
+        if test_hist.empty:
+            raise Exception(f"No data available for ticker {ticker}")
+            
+        return ticker_obj
+    except Exception as e:
+        print(f"Failed to get ticker '{ticker}' reason: {str(e)}")
+        raise  # Re-raise to trigger retry
 
 @retry_with_backoff(retries=3, backoff_factor=1, errors=(Exception,))
 def fetch_ticker_history(ticker_obj, period="2d"):
@@ -148,12 +160,6 @@ def process_ticker(ticker, index=None, total=None, run_gamma=True, run_vol=True,
             print(f"No options data for {ticker}")
             return None, None, None, price_data  # Still return price data even if no options
         
-        # Get options data
-        expiries = data.options
-        if not expiries:
-            print(f"No options data for {ticker}")
-            return None, None, None
-        
         # Raw data collection
         raw_data = None
         if collect_raw:
@@ -168,11 +174,16 @@ def process_ticker(ticker, index=None, total=None, run_gamma=True, run_vol=True,
                 # Fetch option chain with retry
                 calls, puts = fetch_option_chain(data, exp)
                 
+                # Additional check to ensure both calls and puts are valid
+                if calls is None or puts is None:
+                    print(f"Warning: Received None for calls or puts for {ticker} {exp}")
+                    continue
+                
                 # Store raw data if requested
                 if collect_raw:
                     raw_data[ticker][exp] = {
-                        'calls': calls.copy(),
-                        'puts': puts.copy(),
+                        'calls': calls.copy() if calls is not None else pd.DataFrame(),
+                        'puts': puts.copy() if puts is not None else pd.DataFrame(),
                         'spot': spot,
                         'prev_close': prev_close,
                         'trading_date': trading_date.strftime('%Y-%m-%d')  # Add trading date
@@ -207,6 +218,11 @@ def process_ticker(ticker, index=None, total=None, run_gamma=True, run_vol=True,
                     else:
                         # If not available, fetch it again with retry
                         calls, puts = fetch_option_chain(data, exp)
+                        
+                        # Check for None values
+                        if calls is None or puts is None:
+                            print(f"Warning: Received None for calls or puts for {ticker} {exp} in vol analysis")
+                            continue
                     
                     exp_date = datetime.strptime(exp, '%Y-%m-%d')
                     dte = (exp_date - trading_date).days
@@ -235,17 +251,20 @@ def process_ticker(ticker, index=None, total=None, run_gamma=True, run_vol=True,
                     continue
             
             if vol_surface_data:
-                vol_surface_df = pd.concat(vol_surface_data)
-                vol_surface_df['date'] = trading_date.strftime('%Y-%m-%d')
-                vol_surface_df['timestamp'] = datetime.now().strftime('%H:%M:%S')
-                vol_surface_df['trading_date'] = trading_date.strftime('%Y-%m-%d')
-                vol_surface_df['underlying_price'] = price
-                vol_surface_df['ticker'] = ticker
-                
-                # Add previous day close if available
-                if prev_close is not None:
-                    vol_surface_df['prev_close'] = prev_close
-                    vol_surface_df['price_change_pct'] = (price - prev_close) / prev_close * 100
+                # Handle empty DataFrames properly to avoid FutureWarning
+                non_empty_data = [df for df in vol_surface_data if not df.empty]
+                if non_empty_data:
+                    vol_surface_df = pd.concat(non_empty_data)
+                    vol_surface_df['date'] = trading_date.strftime('%Y-%m-%d')
+                    vol_surface_df['timestamp'] = datetime.now().strftime('%H:%M:%S')
+                    vol_surface_df['trading_date'] = trading_date.strftime('%Y-%m-%d')
+                    vol_surface_df['underlying_price'] = price
+                    vol_surface_df['ticker'] = ticker
+                    
+                    # Add previous day close if available
+                    if prev_close is not None:
+                        vol_surface_df['prev_close'] = prev_close
+                        vol_surface_df['price_change_pct'] = (price - prev_close) / prev_close * 100
         
         return gamma_result, vol_surface_df, raw_data, price_data
         
@@ -330,15 +349,21 @@ def save_raw_options_data(ticker_data, timestamp, run_type, trading_date=None, t
     
     # Combine all data and prepare for parquet
     if raw_data:
-        combined_df = pd.concat(raw_data)
-        combined_df = prepare_for_parquet(combined_df)
+        if all(not df.empty for df in raw_data):  # Check that we have non-empty DataFrames
+            combined_df = pd.concat(raw_data)
+            combined_df = prepare_for_parquet(combined_df)
+            
+            # Get the nested folder path
+            from main import get_nested_folder_path
+            folder_info = get_nested_folder_path(trading_date, run_type, test_mode=test_mode)
+            folder_path = folder_info['path']
+            
+            # Save to parquet in the nested folder structure
+            filepath = os.path.join(folder_path, 'raw_options.parquet')
+            combined_df.to_parquet(filepath)
+            return filepath
+        else:
+            print("Warning: Some DataFrames were empty, skipping concatenation")
+            return None
         
-        # Determine base directory based on test_mode
-        base_dir = 'options_data_test' if test_mode else 'options_data'
-        
-        # Save to parquet with simplified name
-        filepath = os.path.join(base_dir, f'raw_options_{trading_date_str}_{run_type}.parquet')
-        combined_df.to_parquet(filepath)
-        return filepath
-    
     return None

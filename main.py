@@ -25,11 +25,25 @@ import pandas as pd
 
 # Import modules
 from data_collection import process_ticker, prepare_for_parquet, save_raw_options_data
-from utils import DEFAULT_TICKERS, STATISTICAL_TICKERS
 from gamma_analysis import calculate_gamma_flip
 from volatility_analysis import analyze_skew
 from sentiment_analysis import analyze_overnight_changes, analyze_daily_changes, analyze_statistical_indicators
 from dashboard import create_overnight_dashboard, create_daily_dashboard
+
+# Dynamically import utils or test_utils depending on test_mode
+def import_utils(test_mode=False):
+    if test_mode:
+        try:
+            import test_utils as utils
+            print("Using TEST_UTILS with reduced ticker list")
+            return utils
+        except ImportError:
+            print("Warning: test_utils.py not found, falling back to standard utils.py")
+            import utils
+            return utils
+    else:
+        import utils
+        return utils
 
 def get_trading_session_date():
     """
@@ -124,6 +138,9 @@ def run_automated_data_collection(test_mode=False):
     Args:
         test_mode (bool): If True, save data to test folders instead of production
     """
+    # Dynamically import the appropriate utils module
+    utils = import_utils(test_mode)
+    
     # Get the current time for logging purposes
     execution_time = datetime.now()
     
@@ -141,6 +158,7 @@ def run_automated_data_collection(test_mode=False):
     
     if test_mode:
         print(f"RUNNING IN TEST MODE - Data will be saved to: {folder_path}")
+        print(f"Using {len(utils.DEFAULT_TICKERS)} tickers instead of full set")
     
     print(f"Starting automated {run_type} run at {execution_time.strftime('%Y-%m-%d %H:%M:%S')}")
     print(f"Trading session date: {date_str}")
@@ -161,10 +179,13 @@ def run_automated_data_collection(test_mode=False):
     all_raw_data = {}
     price_data_list = []
     
+    # Use the tickers from the dynamically imported utils module
+    tickers_to_process = utils.DEFAULT_TICKERS
+    
     # Process tickers in batches
-    for i in range(0, len(DEFAULT_TICKERS), batch_size):
-        batch = DEFAULT_TICKERS[i:i+batch_size]
-        print(f"Processing batch {i//batch_size + 1}/{(len(DEFAULT_TICKERS) + batch_size - 1)//batch_size}")
+    for i in range(0, len(tickers_to_process), batch_size):
+        batch = tickers_to_process[i:i+batch_size]
+        print(f"Processing batch {i//batch_size + 1}/{(len(tickers_to_process) + batch_size - 1)//batch_size}")
         
         for j, ticker in enumerate(batch, 1):
             start_time = time.time()
@@ -173,13 +194,14 @@ def run_automated_data_collection(test_mode=False):
             if j > 1:
                 time.sleep(delay)
             
-            # Process ticker - now captures price_data as the fourth return value
+            # Process ticker - now passes the utils module
             gamma_result, vol_surface_df, raw_data, ticker_price_data = process_ticker(
                 ticker, 
                 (i + j), 
-                len(DEFAULT_TICKERS), 
+                len(tickers_to_process), 
                 run_gamma=run_gamma,
-                run_vol=run_vol
+                run_vol=run_vol,
+                utils_module=utils  # Pass the dynamically imported utils module
             )
             
             # Store raw data if available
@@ -402,7 +424,7 @@ def run_automated_data_collection(test_mode=False):
                     
                     print("Analyzing statistical indicators...")
                     statistical_summary = analyze_statistical_indicators(
-                        prev_price_df, curr_price_df, STATISTICAL_TICKERS
+                        prev_price_df, curr_price_df, utils.STATISTICAL_TICKERS
                     )
                     
                     # Save statistical analysis
