@@ -24,11 +24,11 @@ from datetime import datetime, timedelta
 import pandas as pd
 
 # Import modules
-from data_collection import process_ticker, prepare_for_parquet
-from utils import DEFAULT_TICKERS
+from data_collection import process_ticker, prepare_for_parquet, save_raw_options_data
+from utils import DEFAULT_TICKERS, STATISTICAL_TICKERS
 from gamma_analysis import calculate_gamma_flip
 from volatility_analysis import analyze_skew
-from sentiment_analysis import analyze_overnight_changes, analyze_daily_changes
+from sentiment_analysis import analyze_overnight_changes, analyze_daily_changes, analyze_statistical_indicators
 from dashboard import create_overnight_dashboard, create_daily_dashboard
 
 def get_trading_session_date():
@@ -63,7 +63,7 @@ def get_run_type(current_hour=None):
         
     return "evening" if (current_hour >= 20 or current_hour < 4) else "morning"
 
-def get_nested_folder_path(trading_date=None, run_type=None, base_dir='options_data'):
+def get_nested_folder_path(trading_date=None, run_type=None, base_dir='options_data', test_mode=False):
     """
     Create nested folder structure: year/month/week/day/run_type
     
@@ -71,6 +71,7 @@ def get_nested_folder_path(trading_date=None, run_type=None, base_dir='options_d
         trading_date (datetime, optional): Trading session date, defaults to result of get_trading_session_date()
         run_type (str, optional): 'morning' or 'evening', defaults to result of get_run_type()
         base_dir (str, optional): Base directory, defaults to 'options_data'
+        test_mode (bool, optional): If True, use test directory instead
         
     Returns:
         dict: Dictionary with path and date information
@@ -82,6 +83,10 @@ def get_nested_folder_path(trading_date=None, run_type=None, base_dir='options_d
         
     if run_type is None:
         run_type = get_run_type(trading_date.hour)
+    
+    # Apply test_mode modification to base_dir
+    if test_mode:
+        base_dir = base_dir.replace('options_data', 'options_data_test')
     
     # Extract date components
     year_folder = trading_date.strftime('%Y')
@@ -112,66 +117,12 @@ def get_nested_folder_path(trading_date=None, run_type=None, base_dir='options_d
         'date_str': trading_date.strftime('%Y-%m-%d')  # Keep this for compatibility
     }
 
-def save_raw_options_data(ticker_data, folder_path, trading_date):
-    """
-    Save raw options data before any processing
-    
-    Args:
-        ticker_data (dict): Dictionary containing raw options data by ticker
-        folder_path (str): Path to the folder where the file will be saved
-        trading_date (datetime): Trading session date
-        
-    Returns:
-        str: Path to the saved file
-    """
-    # Create a DataFrame from the raw data
-    raw_data = []
-    timestamp = trading_date.strftime('%Y-%m-%d')
-    run_type = os.path.basename(folder_path)  # Extract from folder path
-    
-    for ticker, data in ticker_data.items():
-        for exp_date, options in data.items():
-            if 'calls' in options and not options['calls'].empty:
-                df_calls = options['calls'].copy()
-                df_calls['ticker'] = ticker
-                df_calls['expiration'] = exp_date
-                df_calls['option_type'] = 'call'
-                df_calls['timestamp'] = timestamp
-                df_calls['run_type'] = run_type
-                df_calls['trading_date'] = timestamp  # Add the trading date explicitly
-                df_calls['underlying_price'] = options.get('spot', None)
-                df_calls['prev_close'] = options.get('prev_close', None)
-                raw_data.append(df_calls)
-            
-            if 'puts' in options and not options['puts'].empty:
-                df_puts = options['puts'].copy()
-                df_puts['ticker'] = ticker
-                df_puts['expiration'] = exp_date
-                df_puts['option_type'] = 'put'
-                df_puts['timestamp'] = timestamp
-                df_puts['run_type'] = run_type
-                df_puts['trading_date'] = timestamp  # Add the trading date explicitly
-                df_puts['underlying_price'] = options.get('spot', None)
-                df_puts['prev_close'] = options.get('prev_close', None)
-                raw_data.append(df_puts)
-    
-    # Combine all data and prepare for parquet
-    if raw_data:
-        combined_df = pd.concat(raw_data)
-        combined_df = prepare_for_parquet(combined_df)
-        
-        # Save to parquet with simplified name
-        filepath = os.path.join(folder_path, 'raw_options.parquet')
-        combined_df.to_parquet(filepath)
-        return filepath
-    
-    return None
-
-def run_automated_data_collection():
+def run_automated_data_collection(test_mode=False):
     """
     Automated pipeline for scheduled execution
+    
     Args:
-    test_mode (bool): If True, save data to test folders instead of production
+        test_mode (bool): If True, save data to test folders instead of production
     """
     # Get the current time for logging purposes
     execution_time = datetime.now()
@@ -184,18 +135,12 @@ def run_automated_data_collection():
     run_type = get_run_type(current_hour)
     
     # Get nested folder path using the trading session date
-    folder_info = get_nested_folder_path(trading_date, run_type)
+    folder_info = get_nested_folder_path(trading_date, run_type, test_mode=test_mode)
     folder_path = folder_info['path']
     date_str = folder_info['date_str']
     
-    # If in test mode, modify the paths
     if test_mode:
-        # Modify the base folder path to add a test indicator
-        folder_path = folder_path.replace('options_data', 'options_data_test')
         print(f"RUNNING IN TEST MODE - Data will be saved to: {folder_path}")
-        
-        # Create the test directory if it doesn't exist
-        os.makedirs(folder_path, exist_ok=True)
     
     print(f"Starting automated {run_type} run at {execution_time.strftime('%Y-%m-%d %H:%M:%S')}")
     print(f"Trading session date: {date_str}")
@@ -265,7 +210,6 @@ def run_automated_data_collection():
                     success = True
                 else:
                     # Only add to failed tickers if it's not a statistical ticker
-                    from utils import STATISTICAL_TICKERS
                     if ticker not in STATISTICAL_TICKERS:
                         failed_tickers.append(ticker)
             
@@ -282,7 +226,7 @@ def run_automated_data_collection():
         
         # Create a dedicated folder for price data
         base_dir = 'options_data_test' if test_mode else 'options_data'
-        price_data_dir = os.path.join(base_dir, year_folder)
+        price_data_dir = os.path.join(base_dir, folder_info['year'])
         os.makedirs(price_data_dir, exist_ok=True)
         
         # Path to the consolidated price data file
@@ -334,7 +278,13 @@ def run_automated_data_collection():
     
     # Save raw data
     if all_raw_data:
-        raw_data_file = save_raw_options_data(all_raw_data, folder_path, trading_date)
+        raw_data_file = save_raw_options_data(
+            all_raw_data, 
+            trading_date.strftime('%Y-%m-%d_%H%M'), 
+            run_type, 
+            trading_date,
+            test_mode=test_mode
+        )
         print(f"Raw options data saved to {raw_data_file}")
         
     # Output for gamma flip
@@ -361,7 +311,7 @@ def run_automated_data_collection():
             prev_date = trading_date - timedelta(days=1)
             
             # Get path to previous evening data
-            prev_evening_info = get_nested_folder_path(prev_date, "evening")
+            prev_evening_info = get_nested_folder_path(prev_date, "evening", test_mode=test_mode)
             prev_evening_path = prev_evening_info['path']
             prev_evening_file = os.path.join(prev_evening_path, 'vol_surface.parquet')
             
@@ -402,7 +352,7 @@ def run_automated_data_collection():
             prev_date = trading_date - timedelta(days=1)
             
             # Get path to previous day's evening data
-            prev_evening_info = get_nested_folder_path(prev_date, "evening")
+            prev_evening_info = get_nested_folder_path(prev_date, "evening", test_mode=test_mode)
             prev_evening_path = prev_evening_info['path']
             prev_evening_file = os.path.join(prev_evening_path, 'vol_surface.parquet')
             prev_price_file = os.path.join(prev_evening_path, 'price_data.parquet')
@@ -442,15 +392,13 @@ def run_automated_data_collection():
             
             # Process price data for statistical indicators
             statistical_summary = None
-            if os.path.exists(price_file) and os.path.exists(prev_price_file):
+            daily_price_file = os.path.join(folder_path, 'price_data.parquet')  # Current price file
+            if os.path.exists(daily_price_file) and os.path.exists(prev_price_file):
                 print(f"Found previous day's price data: {prev_price_file}")
                 
                 try:
-                    from utils import STATISTICAL_TICKERS
-                    from sentiment_analysis import analyze_statistical_indicators
-                    
                     prev_price_df = pd.read_parquet(prev_price_file)
-                    curr_price_df = pd.read_parquet(price_file)
+                    curr_price_df = pd.read_parquet(daily_price_file)
                     
                     print("Analyzing statistical indicators...")
                     statistical_summary = analyze_statistical_indicators(
@@ -458,8 +406,8 @@ def run_automated_data_collection():
                     )
                     
                     # Save statistical analysis
-                    stat_file = os.path.join(folder_path, 'statistical_analysis.csv')
                     if statistical_summary is not None:
+                        stat_file = os.path.join(folder_path, 'statistical_analysis.csv')
                         statistical_summary.to_csv(stat_file)
                         print(f"Statistical analysis saved to {stat_file}")
                     

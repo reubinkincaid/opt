@@ -278,7 +278,7 @@ def prepare_for_parquet(df):
     
     return df
 
-def save_raw_options_data(ticker_data, timestamp, run_type, trading_date=None):
+def save_raw_options_data(ticker_data, timestamp, run_type, trading_date=None, test_mode=False):
     """
     Save raw options data before any processing
     
@@ -287,6 +287,7 @@ def save_raw_options_data(ticker_data, timestamp, run_type, trading_date=None):
         timestamp (str): Timestamp string for the filename
         run_type (str): 'morning' or 'evening'
         trading_date (datetime, optional): Trading session date
+        test_mode (bool, optional): If True, use test directory instead
         
     Returns:
         str: Path to the saved file
@@ -309,7 +310,7 @@ def save_raw_options_data(ticker_data, timestamp, run_type, trading_date=None):
                 df_calls['option_type'] = 'call'
                 df_calls['timestamp'] = timestamp
                 df_calls['run_type'] = run_type
-                df_calls['trading_date'] = trading_date_str
+                df_calls['trading_date'] = trading_date_str  # Add the trading date explicitly
                 df_calls['underlying_price'] = options.get('spot', None)
                 df_calls['prev_close'] = options.get('prev_close', None)
                 raw_data.append(df_calls)
@@ -321,7 +322,7 @@ def save_raw_options_data(ticker_data, timestamp, run_type, trading_date=None):
                 df_puts['option_type'] = 'put'
                 df_puts['timestamp'] = timestamp
                 df_puts['run_type'] = run_type
-                df_puts['trading_date'] = trading_date_str
+                df_puts['trading_date'] = trading_date_str  # Add the trading date explicitly
                 df_puts['underlying_price'] = options.get('spot', None)
                 df_puts['prev_close'] = options.get('prev_close', None)
                 raw_data.append(df_puts)
@@ -331,8 +332,11 @@ def save_raw_options_data(ticker_data, timestamp, run_type, trading_date=None):
         combined_df = pd.concat(raw_data)
         combined_df = prepare_for_parquet(combined_df)
         
-        # Save to parquet - use trading date in filename
-        filepath = f'options_data/raw_options_{trading_date_str}_{run_type}.parquet'
+        # Determine base directory based on test_mode
+        base_dir = 'options_data_test' if test_mode else 'options_data'
+        
+        # Save to parquet with simplified name
+        filepath = os.path.join(base_dir, f'raw_options_{trading_date_str}_{run_type}.parquet')
         combined_df.to_parquet(filepath)
         return filepath
     
