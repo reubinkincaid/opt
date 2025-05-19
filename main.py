@@ -237,7 +237,7 @@ def run_automated_data_collection(test_mode=False):
             
             # Reporting
             elapsed = time.time() - start_time
-            if success or ticker in STATISTICAL_TICKERS:
+            if success or ticker in utils.STATISTICAL_TICKERS:
                 print(f"✓ {ticker} completed in {elapsed:.2f} seconds")
             else:
                 print(f"✗ {ticker} failed")
