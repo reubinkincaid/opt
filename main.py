@@ -232,7 +232,7 @@ def run_automated_data_collection(test_mode=False):
                     success = True
                 else:
                     # Only add to failed tickers if it's not a statistical ticker
-                    if ticker not in STATISTICAL_TICKERS:
+                    if ticker not in utils.STATISTICAL_TICKERS:
                         failed_tickers.append(ticker)
             
             # Reporting

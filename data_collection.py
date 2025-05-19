@@ -92,7 +92,7 @@ def fetch_option_chain(ticker_obj, expiry):
     Returns:
         tuple: (calls, puts) DataFrames
     """
-    opt = ticker_obj.option_chain(expiry)
+    opt = ticker_obj.opHHtion_chain(expiry)
     return opt.calls, opt.puts
 
 # Now modify the process_ticker function to use these retry-enabled functions
@@ -127,8 +127,12 @@ def process_ticker(ticker, index=None, total=None, run_gamma=True, run_vol=True,
     
     try:
         # Fetch data once from yfinance API with retry
-        data = fetch_ticker_data(ticker)
-        
+        try:
+            data = fetch_ticker_data(ticker)
+        except Exception as e:
+            print(f"Error processing {ticker}: {e}")
+            return None, None, None, None
+                    
         # Get spot price with retry
         hist = fetch_ticker_history(data, period="2d")
         if hist.empty:
@@ -200,8 +204,8 @@ def process_ticker(ticker, index=None, total=None, run_gamma=True, run_vol=True,
                     puts_copy['ExpirationDate'] = pd.to_datetime(exp)
                     all_options.append((calls_copy, puts_copy))
             except Exception as e:
-                print(f"Error with gamma calc for {ticker} {exp}: {e}")
-                continue
+                print(f"Error processing {ticker}: {e}")
+                return None, None, None, None
         
         if run_gamma and all_options:
             fromStrike, toStrike = 0.5 * spot, 2.0 * spot
