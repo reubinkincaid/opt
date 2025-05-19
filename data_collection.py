@@ -92,7 +92,7 @@ def fetch_option_chain(ticker_obj, expiry):
     Returns:
         tuple: (calls, puts) DataFrames
     """
-    opt = ticker_obj.opHHtion_chain(expiry)
+    opt = ticker_obj.option_chain(expiry)
     return opt.calls, opt.puts
 
 # Now modify the process_ticker function to use these retry-enabled functions
