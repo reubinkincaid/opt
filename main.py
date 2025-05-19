@@ -329,16 +329,22 @@ def run_automated_data_collection(test_mode=False):
         
         # For morning runs, try to find and compare with previous evening data (Overnight Analysis)
         if run_type == "morning":
-            # Determine previous evening's date correctly accounting for weekends
-            prev_date = trading_date - timedelta(days=1)
+            # Get the current weekday (0=Monday, 1=Tuesday, ..., 6=Sunday)
+            current_weekday = trading_date.weekday()
             
-            # If previous date is Sunday, go back to Friday
-            if prev_date.weekday() == 6:  # Sunday
-                prev_date = trading_date - timedelta(days=3)  # Go back to Friday
-            elif prev_date.weekday() == 5:  # Saturday
-                prev_date = trading_date - timedelta(days=2)  # Go back to Friday
-                
-            print(f"Using previous trading day: {prev_date.strftime('%Y-%m-%d')} for comparison")
+            # Determine previous trading day based on current weekday
+            if current_weekday == 0:  # Monday
+                # Go back to Friday (3 days back)
+                prev_date = trading_date - timedelta(days=3)
+            elif current_weekday == 1:  # Tuesday
+                # Go back to Monday (1 day back)
+                prev_date = trading_date - timedelta(days=1)
+            else:
+                # For other weekdays, just go back 1 day
+                prev_date = trading_date - timedelta(days=1)
+            
+            print(f"Current weekday: {current_weekday} ({trading_date.strftime('%A')})")
+            print(f"Using previous trading day: {prev_date.strftime('%Y-%m-%d')} ({prev_date.strftime('%A')}) for comparison")
             
             # Get path to previous evening data
             prev_evening_info = get_nested_folder_path(prev_date, "evening", test_mode=test_mode)
