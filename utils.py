@@ -10,7 +10,7 @@ DEFAULT_TICKERS = [
     
     # Technology
     'AAPL', 'MSFT', 'AMZN', 'GOOGL', 'META', 'NVDA', 'AMD', 'TSM', 'ADBE', 'NOW', 'PLTR', 
-    'MU', 'RBLX', 'U', 'ROKU', 'RDDT', 'NBIS',
+    'MU', 'RBLX', 'U', 'ROKU', 'RDDT', 'NBIS', 'IONQ', 'CRWV',
     
     # Finance
     'JPM', 'BAC', 'GS', 'V', 'MA', 
@@ -22,11 +22,11 @@ DEFAULT_TICKERS = [
     'MARA', 'MSTR', 'RIOT',
     
     # Healthcare & Biotech
-    'MRNA', 'NVAX', 'SGMO', 'SRPT', 'TCMD', 'VKTX', 'WGS',
+    'MRNA', 'NVAX', 'SRPT', 'TCMD', 'VKTX', 'WGS',
     
     # Other stocks
     'COST', 'CPRT', 'DIS', 'PM', 'SPHR', 'SGI', 'CAVA', 'CVNA', 'GRAB', 'PDYN', 'SERV',
-    'ACHR', 'JOBY',
+    'ACHR', 'JOBY', 'WRD',
     
     # Large Cap - Various Sectors
     'GOOG', 'BRK-B', 'JNJ', 'PG', 'UNH', 'HD', 'CVX', 'LLY', 'AVGO', 'MRK',
@@ -129,7 +129,7 @@ SECTOR_MAP = {
     'AAPL': 'Technology', 'MSFT': 'Technology', 'GOOGL': 'Technology', 'META': 'Technology', 
     'NVDA': 'Semiconductor', 'AMD': 'Semiconductor', 'TSM': 'Semiconductor', 'MU': 'Semiconductor',
     'ADBE': 'Software', 'NOW': 'Software', 'PLTR': 'Software', 'RBLX': 'Software', 'U': 'Software',
-    'ROKU': 'Technology', 'RDDT': 'Social Media', 'NBIS': 'Technology',
+    'ROKU': 'Technology', 'RDDT': 'Social Media', 'NBIS': 'Technology', 'IONQ': 'Technology',
     'GOOG': 'Technology', 'CSCO': 'Technology', 'QCOM': 'Semiconductor', 'AVGO': 'Semiconductor',
     'INTC': 'Semiconductor', 'TXN': 'Semiconductor', 'ORCL': 'Software', 'CRM': 'Software',
     'INTU': 'Software', 'DDOG': 'Software', 'ZS': 'Software', 'NET': 'Software', 'SNOW': 'Software',
@@ -138,6 +138,7 @@ SECTOR_MAP = {
     'FTNT': 'Software', 'PANW': 'Software', 'SNAP': 'Social Media', 'PINS': 'Social Media',
     'ARM': 'Semiconductor', 'CRDO': 'Semiconductor', 'SMCI': 'Technology', 'AI': 'Software',
     'GTLB': 'Software', 'HUBS': 'Software', 'ANET': 'Technology', 'GFS': 'Semiconductor',
+    'CRWV': 'Technology',
     
     # Finance
     'JPM': 'Financials', 'BAC': 'Financials', 'GS': 'Financials', 'V': 'Financials', 'MA': 'Financials',
@@ -152,10 +153,10 @@ SECTOR_MAP = {
     'CVX': 'Energy', 'COP': 'Energy', 'BP': 'Energy', 'SHEL': 'Energy', 'ENPH': 'Clean Energy',
     
     # Crypto related
-    'MARA': 'Crypto', 'MSTR': 'Crypto', 'RIOT': 'Crypto', 'COIN': 'Crypto',
+    'MARA': 'Crypto', 'MSTR': 'Crypto', 'RIOT': 'Crypto', 'COIN': 'Crypto', 'IBIT': 'Crypto'
     
     # Healthcare & Biotech
-    'MRNA': 'Biotech', 'NVAX': 'Biotech', 'SGMO': 'Biotech', 'SRPT': 'Biotech', 
+    'MRNA': 'Biotech', 'NVAX': 'Biotech', 'SRPT': 'Biotech', 
     'TCMD': 'Healthcare', 'VKTX': 'Biotech', 'WGS': 'Biotech',
     'JNJ': 'Healthcare', 'UNH': 'Healthcare', 'LLY': 'Healthcare', 'MRK': 'Healthcare',
     'ABBV': 'Healthcare', 'ABT': 'Healthcare', 'BMY': 'Healthcare', 'AMGN': 'Biotech',
@@ -177,7 +178,7 @@ SECTOR_MAP = {
     'UAL': 'Airlines', 'DAL': 'Airlines', 'JBLU': 'Airlines', 'AAL': 'Airlines',
     'ACHR': 'eVTOL', 'JOBY': 'eVTOL', 'CCL': 'Cruise Lines', 'RCL': 'Cruise Lines',
     'UBER': 'Rideshare', 'LYFT': 'Rideshare', 'GRAB': 'Rideshare', 'DASH': 'Delivery',
-    'CVNA': 'Auto Retail', 'VRM': 'Auto Retail', 'CPRT': 'Auto Services',
+    'CVNA': 'Auto Retail', 'VRM': 'Auto Retail', 'CPRT': 'Auto Services', 'WRD': 'Rideshare',
     
     # Industrials & Manufacturing
     'F': 'Auto Manufacturing', 'GM': 'Auto Manufacturing', 'TM': 'Auto Manufacturing',

@@ -311,11 +311,45 @@ def run_automated_data_collection(test_mode=False):
         
     # Output for gamma flip
     if gamma_results:
-        output = ';'.join(gamma_results)
+        # Join all results with semicolons
+        full_output = ';'.join(gamma_results)
+        
+        # Split into chunks of max 6000 characters
+        MAX_CHUNK_SIZE = 6000
+        chunks = []
+        current_chunk = ""
+        
+        # Split by semicolons to ensure we don't break in the middle of a ticker
+        parts = full_output.split(';')
+        
+        for part in parts:
+            # Check if adding this part would exceed the chunk size
+            if len(current_chunk) + len(part) + 1 > MAX_CHUNK_SIZE and current_chunk:
+                # Current chunk would be too big, so store it and start a new one
+                chunks.append(current_chunk)
+                current_chunk = part
+            else:
+                # Add to current chunk with semicolon if not the first item
+                if current_chunk:
+                    current_chunk += ";" + part
+                else:
+                    current_chunk = part
+        
+        # Add the last chunk if it's not empty
+        if current_chunk:
+            chunks.append(current_chunk)
+        
+        # Save all chunks to a single file with clear separation
         gamma_file = os.path.join(folder_path, 'gamma_flip.txt')
         with open(gamma_file, 'w') as f:
-            f.write(output)
-        print(f"Gamma Flip Analysis saved to {gamma_file}")
+            for i, chunk in enumerate(chunks):
+                # For each chunk, add a line with chunk number
+                f.write(f"#Options_Data_Set_{i+1}\n")
+                f.write(chunk)
+                f.write("\n\n")  # Add empty lines between chunks
+        
+        print(f"Gamma Flip Analysis with {len(chunks)} chunks saved to {gamma_file}")
+        print(f"Chunk sizes: {', '.join([str(len(chunk)) for chunk in chunks])}")
     
     # Output for volatility surface
     if all_vol_surface_data:
@@ -350,7 +384,7 @@ def run_automated_data_collection(test_mode=False):
             prev_evening_info = get_nested_folder_path(prev_date, "evening", test_mode=test_mode)
             prev_evening_path = prev_evening_info['path']
             prev_evening_file = os.path.join(prev_evening_path, 'vol_surface.parquet')
-                
+
             if os.path.exists(prev_evening_file):
                 print(f"Found previous evening data: {prev_evening_file}")
                 
