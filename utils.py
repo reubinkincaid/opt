@@ -48,7 +48,7 @@ DEFAULT_TICKERS = [
     'MNDY', 'FIGS', 'MAPS', 'OUST', 'VRM', 'FVRR', 'OCGN', 'CRON',
     
     # International
-    'BABA', 'NIO', 'VALE', 'BP', 'TM', 'RIO', 'BHP', 'GSK', 'PDD', 'SONY',
+    'BABA', 'NIO', 'VALE', 'BP', 'TM', 'RIO', 'BHP', 'GSK', 'SONY',
     'SAP', 'UL', 'DEO', 'BTI', 'NVS', 'HSBC', 'SAN', 'SHOP', 'SE', 'SHEL',
     
     # Industrials/Manufacturing
