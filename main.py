@@ -329,14 +329,22 @@ def run_automated_data_collection(test_mode=False):
         
         # For morning runs, try to find and compare with previous evening data (Overnight Analysis)
         if run_type == "morning":
-            # Determine previous evening's date
+            # Determine previous evening's date correctly accounting for weekends
             prev_date = trading_date - timedelta(days=1)
+            
+            # If previous date is Sunday, go back to Friday
+            if prev_date.weekday() == 6:  # Sunday
+                prev_date = trading_date - timedelta(days=3)  # Go back to Friday
+            elif prev_date.weekday() == 5:  # Saturday
+                prev_date = trading_date - timedelta(days=2)  # Go back to Friday
+                
+            print(f"Using previous trading day: {prev_date.strftime('%Y-%m-%d')} for comparison")
             
             # Get path to previous evening data
             prev_evening_info = get_nested_folder_path(prev_date, "evening", test_mode=test_mode)
             prev_evening_path = prev_evening_info['path']
             prev_evening_file = os.path.join(prev_evening_path, 'vol_surface.parquet')
-            
+                
             if os.path.exists(prev_evening_file):
                 print(f"Found previous evening data: {prev_evening_file}")
                 
