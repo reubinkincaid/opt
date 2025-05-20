@@ -10,7 +10,7 @@ DEFAULT_TICKERS = [
     
     # Technology
     'AAPL', 'MSFT', 'AMZN', 'GOOGL', 'META', 'NVDA', 'AMD', 'TSM', 'ADBE', 'NOW', 'PLTR', 
-    'MU', 'RBLX', 'U', 'ROKU', 'RDDT', 'NBIS', 'IONQ', 'CRWV',
+    'MU', 'RBLX', 'U', 'ROKU', 'RDDT', 'NBIS', 'IONQ', 'CRWV', 'QBTS', 'CLS',
     
     # Finance
     'JPM', 'BAC', 'GS', 'V', 'MA', 
@@ -22,7 +22,7 @@ DEFAULT_TICKERS = [
     'MARA', 'MSTR', 'RIOT',
     
     # Healthcare & Biotech
-    'MRNA', 'NVAX', 'SRPT', 'TCMD', 'VKTX', 'WGS',
+    'MRNA', 'NVAX', 'SRPT', 'TCMD', 'VKTX', 'WGS', 'HIMS',
     
     # Other stocks
     'COST', 'CPRT', 'DIS', 'PM', 'SPHR', 'SGI', 'CAVA', 'CVNA', 'GRAB', 'PDYN', 'SERV',
@@ -64,7 +64,7 @@ DEFAULT_TICKERS = [
     'YUM', 'DNUT', 'CMG', 'DPZ', 'QSR', 'WEN', 'JACK', 'CAKE',
     
     # Software/Cloud
-    'ZM', 'PATH', 'NET', 'SNOW', 'TWLO', 'MDB', 'OKTA', 'CFLT',
+    'ZM', 'PATH', 'NET', 'SNOW', 'TWLO', 'MDB', 'OKTA', 'CFLT', 'TEM', 'SEZL',
     
     # New replacements for failing tickers
     'ARM',   # ARM Holdings
@@ -138,7 +138,8 @@ SECTOR_MAP = {
     'FTNT': 'Software', 'PANW': 'Software', 'SNAP': 'Social Media', 'PINS': 'Social Media',
     'ARM': 'Semiconductor', 'CRDO': 'Semiconductor', 'SMCI': 'Technology', 'AI': 'Software',
     'GTLB': 'Software', 'HUBS': 'Software', 'ANET': 'Technology', 'GFS': 'Semiconductor',
-    'CRWV': 'Technology',
+    'CRWV': 'Technology', 'TEM': 'Software', 'QBTS': 'Semiconductor', 'SEZL': "Software",
+    'CLS': 'Technology',
     
     # Finance
     'JPM': 'Financials', 'BAC': 'Financials', 'GS': 'Financials', 'V': 'Financials', 'MA': 'Financials',
@@ -153,7 +154,7 @@ SECTOR_MAP = {
     'CVX': 'Energy', 'COP': 'Energy', 'BP': 'Energy', 'SHEL': 'Energy', 'ENPH': 'Clean Energy',
     
     # Crypto related
-    'MARA': 'Crypto', 'MSTR': 'Crypto', 'RIOT': 'Crypto', 'COIN': 'Crypto', 'IBIT': 'Crypto'
+    'MARA': 'Crypto', 'MSTR': 'Crypto', 'RIOT': 'Crypto', 'COIN': 'Crypto', 'IBIT': 'Crypto',
     
     # Healthcare & Biotech
     'MRNA': 'Biotech', 'NVAX': 'Biotech', 'SRPT': 'Biotech', 
@@ -162,6 +163,7 @@ SECTOR_MAP = {
     'ABBV': 'Healthcare', 'ABT': 'Healthcare', 'BMY': 'Healthcare', 'AMGN': 'Biotech',
     'MDT': 'Healthcare', 'ISRG': 'Healthcare', 'CLOV': 'Healthcare', 'OCGN': 'Biotech',
     'CRON': 'Biotech', 'CGC': 'Biotech', 'BYND': 'Alternative Foods', 'GSK': 'Healthcare', 'NVS': 'Healthcare',
+    'HIMS': "Healthcare",
     
     # Retail & Consumer
     'COST': 'Retail', 'WMT': 'Retail', 'TGT': 'Retail', 'HD': 'Retail', 'LOW': 'Retail',
