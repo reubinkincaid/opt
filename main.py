@@ -314,8 +314,8 @@ def run_automated_data_collection(test_mode=False):
         # Join all results with semicolons
         full_output = ';'.join(gamma_results)
         
-        # Split into chunks of max 6000 characters
-        MAX_CHUNK_SIZE = 6000
+        # Split into chunks of max #### characters
+        MAX_CHUNK_SIZE = 2500
         chunks = []
         current_chunk = ""
         
