@@ -1,0 +1,81 @@
+OVERNIGHT SENTIMENT DASHBOARD
+
+Overall Market: BEARISH (-5.31)
+
+Top Bullish:
+BKNG: 443.15
+TEM: 429.17
+WGS: 418.38
+DPZ: 368.19
+CRDO: 253.99
+
+Top Bearish:
+ABNB: -870.00
+CAVA: -225.07
+SOFI: -215.53
+SMCI: -163.45
+SRPT: -87.86
+
+Sector Sentiment:
+Travel: BULLISH (443.15)
+Mining: BULLISH (64.26)
+Biotech: BULLISH (31.55)
+Aerospace: BULLISH (29.73)
+Restaurant: BULLISH (24.11)
+Business Services: BULLISH (22.34)
+Consumer Goods: BULLISH (22.18)
+Semiconductor: BULLISH (20.01)
+Financials: BULLISH (10.17)
+Industrials: BULLISH (9.98)
+Software: BULLISH (8.90)
+Auto Retail: BULLISH (6.18)
+Retail: BULLISH (5.04)
+Consumer Discretionary: BULLISH (3.03)
+Streaming: BULLISH (2.80)
+Life Sciences: BULLISH (2.71)
+Index: BULLISH (2.31)
+Entertainment: BULLISH (2.09)
+Delivery: BULLISH (2.04)
+Gaming: BULLISH (1.36)
+Utilities: BULLISH (1.29)
+eVTOL: BULLISH (0.99)
+E-Commerce: BULLISH (0.94)
+Other: BULLISH (0.93)
+Automotive Tech: BULLISH (0.19)
+EV: BULLISH (0.10)
+Footwear: BEARISH (0.00)
+EV Infrastructure: BEARISH (0.00)
+Cruise Lines: BEARISH (0.00)
+Conglomerate: BEARISH (0.00)
+Steel: BEARISH (0.00)
+Real Estate: BEARISH (0.00)
+REITs: BEARISH (0.00)
+Rail: BEARISH (0.00)
+Media: BEARISH (0.00)
+Heavy Equipment: BEARISH (0.00)
+Electronics: BEARISH (0.00)
+Fitness: BEARISH (0.00)
+Consumer Staples: BEARISH (0.00)
+Auto Services: BEARISH (0.00)
+Alternative Foods: BEARISH (0.00)
+Airlines: BEARISH (0.00)
+Cloud Services: BEARISH (0.00)
+Materials: BEARISH (0.00)
+Insurance: BEARISH (0.00)
+Healthcare Apparel: BEARISH (0.00)
+Space Tourism: BEARISH (0.00)
+Services: BEARISH (0.00)
+Leveraged Index: BEARISH (0.00)
+Rideshare: BEARISH (0.00)
+Auto Manufacturing: BEARISH (-1.14)
+Social Media: BEARISH (-1.14)
+Clean Energy: BEARISH (-1.58)
+Telecom: BEARISH (-2.60)
+Healthcare: BEARISH (-3.31)
+Fintech: BEARISH (-6.24)
+Energy: BEARISH (-8.45)
+Technology: BEARISH (-9.44)
+Crypto: BEARISH (-10.11)
+Sports Betting: BEARISH (-11.19)
+Chemicals: BEARISH (-21.66)
+Travel & Leisure: BEARISH (-870.00)
