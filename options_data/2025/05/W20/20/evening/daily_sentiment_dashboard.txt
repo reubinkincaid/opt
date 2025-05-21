@@ -1,0 +1,81 @@
+DAILY SENTIMENT DASHBOARD
+
+Overall Market: BEARISH (-416.82)
+
+Top Bullish:
+QBTS: 2786838.12
+PTON: 978401.27
+MRNA: 190560.39
+CRWV: 189182.07
+SRPT: 88164.38
+
+Top Bearish:
+GOOGL: -85339.98
+GOOG: -78586.65
+SPCE: -72538.35
+HD: -68944.31
+ABNB: -62047.48
+
+Sector Sentiment:
+Fitness: BULLISH (978401.27)
+Semiconductor: BULLISH (196695.10)
+Electronics: BULLISH (50632.70)
+Aerospace: BULLISH (36110.36)
+Biotech: BULLISH (34377.06)
+Delivery: BULLISH (20297.38)
+REITs: BULLISH (13002.59)
+Clean Energy: BULLISH (10336.98)
+EV: BULLISH (10325.50)
+Alternative Foods: BULLISH (9544.73)
+Utilities: BULLISH (9115.20)
+Consumer Staples: BULLISH (7755.38)
+Consumer Goods: BULLISH (7297.49)
+Gaming: BULLISH (6293.29)
+Travel: BULLISH (4964.10)
+Media: BULLISH (3554.63)
+Restaurant: BULLISH (3455.89)
+Life Sciences: BULLISH (2814.69)
+Entertainment: BULLISH (2651.34)
+Chemicals: BULLISH (2333.60)
+E-Commerce: BULLISH (987.64)
+Insurance: BULLISH (772.70)
+Auto Manufacturing: BULLISH (522.38)
+Rail: BULLISH (443.61)
+Real Estate: BULLISH (417.98)
+EV Infrastructure: BULLISH (342.73)
+Healthcare Apparel: BEARISH (-195.40)
+Consumer Discretionary: BEARISH (-224.72)
+Industrials: BEARISH (-375.09)
+Telecom: BEARISH (-750.17)
+Healthcare: BEARISH (-872.51)
+Airlines: BEARISH (-1051.24)
+Steel: BEARISH (-1129.20)
+Cloud Services: BEARISH (-1403.15)
+Business Services: BEARISH (-1656.69)
+Mining: BEARISH (-2345.94)
+Automotive Tech: BEARISH (-2698.82)
+Technology: BEARISH (-3561.44)
+Energy: BEARISH (-3630.70)
+Financials: BEARISH (-4016.17)
+Software: BEARISH (-4033.40)
+Fintech: BEARISH (-4284.77)
+Other: BEARISH (-7284.15)
+eVTOL: BEARISH (-7339.06)
+Footwear: BEARISH (-7509.39)
+Crypto: BEARISH (-7541.52)
+Retail: BEARISH (-8018.72)
+Materials: BEARISH (-8433.46)
+Heavy Equipment: BEARISH (-8745.54)
+Cruise Lines: BEARISH (-8852.05)
+Streaming: BEARISH (-11467.56)
+Services: BEARISH (-13645.65)
+Leveraged Index: BEARISH (-14306.57)
+Auto Retail: BEARISH (-14561.56)
+Conglomerate: BEARISH (-15941.58)
+Index: BEARISH (-16223.08)
+Auto Services: BEARISH (-17686.88)
+Rideshare: BEARISH (-18504.94)
+Social Media: BEARISH (-22457.34)
+Sports Betting: BEARISH (-33845.66)
+Travel & Leisure: BEARISH (-62047.48)
+Space Tourism: BEARISH (-72538.35)
