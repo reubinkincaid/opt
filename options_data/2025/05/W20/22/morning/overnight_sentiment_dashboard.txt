@@ -1,0 +1,81 @@
+OVERNIGHT SENTIMENT DASHBOARD
+
+Overall Market: BEARISH (-1.93)
+
+Top Bullish:
+ROOT: 141.08
+NSC: 110.57
+NOW: 93.21
+NBIS: 88.94
+INTU: 85.00
+
+Top Bearish:
+LYV: -2685.91
+RCL: -797.84
+IRM: -524.29
+CAVA: -366.58
+RDDT: -359.89
+
+Sector Sentiment:
+Insurance: BULLISH (141.08)
+Rail: BULLISH (49.56)
+Leveraged Index: BULLISH (40.71)
+Sports Betting: BULLISH (31.47)
+Chemicals: BULLISH (17.06)
+Telecom: BULLISH (14.99)
+Steel: BULLISH (10.23)
+eVTOL: BULLISH (9.99)
+Software: BULLISH (9.70)
+Technology: BULLISH (8.35)
+Auto Manufacturing: BULLISH (8.11)
+Auto Retail: BULLISH (6.44)
+Aerospace: BULLISH (4.44)
+Cloud Services: BULLISH (3.40)
+Semiconductor: BULLISH (1.40)
+Crypto: BULLISH (1.34)
+Retail: BULLISH (1.15)
+Travel & Leisure: BULLISH (0.91)
+Consumer Goods: BULLISH (0.49)
+E-Commerce: BULLISH (0.45)
+Streaming: BULLISH (0.21)
+EV: BULLISH (0.10)
+Other: BULLISH (0.10)
+Footwear: BEARISH (0.00)
+Fitness: BEARISH (0.00)
+Business Services: BEARISH (0.00)
+Auto Services: BEARISH (0.00)
+Alternative Foods: BEARISH (0.00)
+Clean Energy: BEARISH (0.00)
+Airlines: BEARISH (0.00)
+Real Estate: BEARISH (0.00)
+Healthcare Apparel: BEARISH (0.00)
+Rideshare: BEARISH (0.00)
+Services: BEARISH (0.00)
+Space Tourism: BEARISH (0.00)
+Fintech: BEARISH (0.00)
+Media: BEARISH (0.00)
+Mining: BEARISH (0.00)
+Electronics: BEARISH (0.00)
+EV Infrastructure: BEARISH (0.00)
+Consumer Staples: BEARISH (0.00)
+Delivery: BEARISH (0.00)
+Utilities: BEARISH (-0.41)
+Conglomerate: BEARISH (-0.59)
+Index: BEARISH (-1.31)
+Healthcare: BEARISH (-2.18)
+Financials: BEARISH (-3.04)
+Travel: BEARISH (-5.07)
+Automotive Tech: BEARISH (-5.27)
+Biotech: BEARISH (-5.84)
+Gaming: BEARISH (-6.56)
+Energy: BEARISH (-11.60)
+Consumer Discretionary: BEARISH (-20.97)
+Materials: BEARISH (-27.07)
+Restaurant: BEARISH (-30.43)
+Heavy Equipment: BEARISH (-31.33)
+Industrials: BEARISH (-80.27)
+Life Sciences: BEARISH (-97.03)
+Social Media: BEARISH (-119.96)
+REITs: BEARISH (-174.76)
+Cruise Lines: BEARISH (-398.92)
+Entertainment: BEARISH (-447.55)
