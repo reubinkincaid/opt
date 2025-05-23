@@ -29,6 +29,7 @@ from gamma_analysis import calculate_gamma_flip
 from volatility_analysis import analyze_skew
 from sentiment_analysis import analyze_overnight_changes, analyze_daily_changes, analyze_statistical_indicators
 from dashboard import create_overnight_dashboard, create_daily_dashboard
+from discord_webhooks import send_tradingview_data, send_overnight_sentiment, send_daily_sentiment
 
 # Dynamically import utils or test_utils depending on test_mode
 def import_utils(test_mode=False):
@@ -350,6 +351,13 @@ def run_automated_data_collection(test_mode=False):
         
         print(f"Gamma Flip Analysis with {len(chunks)} chunks saved to {gamma_file}")
         print(f"Chunk sizes: {', '.join([str(len(chunk)) for chunk in chunks])}")
+        
+        # Send TradingView data to Discord
+        print("Sending TradingView data to Discord...")
+        if send_tradingview_data(gamma_results):
+            print("✓ TradingView data sent to Discord successfully")
+        else:
+            print("✗ Failed to send TradingView data to Discord")
     
     # Output for volatility surface
     if all_vol_surface_data:
@@ -410,6 +418,13 @@ def run_automated_data_collection(test_mode=False):
                     
                     summary_file = os.path.join(folder_path, 'overnight_sentiment_summary.csv')
                     summary.to_csv(summary_file)
+                    
+                    # Send overnight sentiment to Discord
+                    print("Sending overnight sentiment to Discord...")
+                    if send_overnight_sentiment(summary):
+                        print("✓ Overnight sentiment sent to Discord successfully")
+                    else:
+                        print("✗ Failed to send overnight sentiment to Discord")
                     
                 except Exception as e:
                     print(f"Error comparing with evening data: {e}")
@@ -487,6 +502,13 @@ def run_automated_data_collection(test_mode=False):
             # Create combined dashboard
             dashboard_file = os.path.join(folder_path, 'daily_sentiment_dashboard.txt')
             create_daily_dashboard(options_summary, dashboard_file, statistical_summary)
+            
+            # Send daily sentiment to Discord
+            print("Sending daily sentiment to Discord...")
+            if send_daily_sentiment(options_summary, statistical_summary):
+                print("✓ Daily sentiment sent to Discord successfully")
+            else:
+                print("✗ Failed to send daily sentiment to Discord")
         
         print(f"Analyzing volatility skew...")
         skew_df = analyze_skew(combined_df)
