@@ -1,0 +1,81 @@
+OVERNIGHT SENTIMENT DASHBOARD
+
+Overall Market: BULLISH (6.31)
+
+Top Bullish:
+CLS: 2477.71
+IONQ: 2008.51
+SCHW: 611.57
+MMM: 498.78
+CRWV: 241.04
+
+Top Bearish:
+MDT: -671.67
+SPGI: -318.05
+ENPH: -314.70
+LLY: -138.48
+DPZ: -111.68
+
+Sector Sentiment:
+Technology: BULLISH (264.06)
+Real Estate: BULLISH (215.24)
+Auto Services: BULLISH (182.60)
+Travel: BULLISH (180.66)
+Industrials: BULLISH (168.13)
+Auto Manufacturing: BULLISH (52.54)
+Financials: BULLISH (37.46)
+Rail: BULLISH (29.51)
+REITs: BULLISH (26.19)
+Streaming: BULLISH (20.34)
+Other: BULLISH (19.63)
+Materials: BULLISH (12.05)
+Telecom: BULLISH (12.04)
+Entertainment: BULLISH (11.38)
+Utilities: BULLISH (9.29)
+Aerospace: BULLISH (5.41)
+Travel & Leisure: BULLISH (4.77)
+Software: BULLISH (4.05)
+Cruise Lines: BULLISH (3.36)
+Gaming: BULLISH (2.03)
+Consumer Goods: BULLISH (1.36)
+Retail: BULLISH (0.93)
+eVTOL: BULLISH (0.79)
+EV: BULLISH (0.11)
+Fitness: BEARISH (0.00)
+Chemicals: BEARISH (0.00)
+Consumer Discretionary: BEARISH (0.00)
+Alternative Foods: BEARISH (0.00)
+Auto Retail: BEARISH (0.00)
+Automotive Tech: BEARISH (0.00)
+Healthcare Apparel: BEARISH (0.00)
+Sports Betting: BEARISH (0.00)
+Rideshare: BEARISH (0.00)
+Space Tourism: BEARISH (0.00)
+Social Media: BEARISH (0.00)
+Services: BEARISH (0.00)
+Media: BEARISH (0.00)
+Heavy Equipment: BEARISH (0.00)
+Consumer Staples: BEARISH (0.00)
+EV Infrastructure: BEARISH (0.00)
+Conglomerate: BEARISH (0.00)
+Cloud Services: BEARISH (0.00)
+Electronics: BEARISH (0.00)
+Delivery: BEARISH (0.00)
+Fintech: BEARISH (0.00)
+Leveraged Index: BEARISH (0.00)
+Steel: BEARISH (0.00)
+Semiconductor: BEARISH (-0.04)
+Index: BEARISH (-0.53)
+Energy: BEARISH (-1.16)
+Crypto: BEARISH (-2.08)
+Airlines: BEARISH (-4.04)
+Insurance: BEARISH (-4.05)
+E-Commerce: BEARISH (-8.33)
+Footwear: BEARISH (-8.81)
+Biotech: BEARISH (-9.09)
+Restaurant: BEARISH (-10.82)
+Mining: BEARISH (-15.94)
+Life Sciences: BEARISH (-25.59)
+Healthcare: BEARISH (-53.85)
+Clean Energy: BEARISH (-78.68)
+Business Services: BEARISH (-318.05)
