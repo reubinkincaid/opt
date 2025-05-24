@@ -1,0 +1,81 @@
+DAILY SENTIMENT DASHBOARD
+
+Overall Market: BEARISH (-20999.27)
+
+Top Bullish:
+GME: 317524.85
+INTU: 164809.76
+PTON: 140016.71
+CRWV: 75802.44
+BILL: 62849.98
+
+Top Bearish:
+CPRT: -287857.75
+MSTR: -231067.02
+AAPL: -140428.98
+SPY: -96694.17
+QQQ: -89601.45
+
+Sector Sentiment:
+Fitness: BULLISH (140016.71)
+Retail: BULLISH (29701.71)
+Delivery: BULLISH (23042.55)
+Streaming: BULLISH (11447.77)
+Clean Energy: BULLISH (7603.18)
+Utilities: BULLISH (5350.14)
+Software: BULLISH (4781.43)
+EV Infrastructure: BULLISH (4485.00)
+Consumer Goods: BULLISH (3865.73)
+Travel: BULLISH (3854.32)
+Electronics: BULLISH (3795.68)
+Auto Retail: BULLISH (3302.19)
+Energy: BULLISH (1405.03)
+E-Commerce: BULLISH (1193.56)
+Telecom: BULLISH (849.07)
+Insurance: BULLISH (458.79)
+Materials: BULLISH (315.53)
+Mining: BULLISH (220.25)
+Consumer Staples: BULLISH (162.56)
+Chemicals: BULLISH (144.80)
+Business Services: BULLISH (76.71)
+Media: BEARISH (-137.80)
+Healthcare Apparel: BEARISH (-154.87)
+Entertainment: BEARISH (-234.16)
+Space Tourism: BEARISH (-434.66)
+Sports Betting: BEARISH (-1031.35)
+Industrials: BEARISH (-1592.99)
+Cruise Lines: BEARISH (-1862.11)
+Restaurant: BEARISH (-2008.36)
+Healthcare: BEARISH (-2186.88)
+Conglomerate: BEARISH (-2293.10)
+Rail: BEARISH (-2296.42)
+Services: BEARISH (-2309.06)
+Consumer Discretionary: BEARISH (-2857.23)
+Airlines: BEARISH (-2986.61)
+Automotive Tech: BEARISH (-3165.38)
+Social Media: BEARISH (-3332.77)
+eVTOL: BEARISH (-3390.35)
+Biotech: BEARISH (-4821.33)
+EV: BEARISH (-5781.06)
+Financials: BEARISH (-5830.31)
+Aerospace: BEARISH (-6519.90)
+Fintech: BEARISH (-6732.62)
+Heavy Equipment: BEARISH (-7137.35)
+Other: BEARISH (-7360.64)
+Alternative Foods: BEARISH (-7511.80)
+Semiconductor: BEARISH (-7883.21)
+Travel & Leisure: BEARISH (-7971.90)
+Cloud Services: BEARISH (-8392.79)
+REITs: BEARISH (-9073.17)
+Auto Manufacturing: BEARISH (-9331.90)
+Real Estate: BEARISH (-9535.87)
+Gaming: BEARISH (-9874.77)
+Technology: BEARISH (-12122.75)
+Life Sciences: BEARISH (-14057.20)
+Footwear: BEARISH (-18494.31)
+Rideshare: BEARISH (-28772.55)
+Leveraged Index: BEARISH (-42197.42)
+Index: BEARISH (-56235.53)
+Steel: BEARISH (-69165.83)
+Crypto: BEARISH (-99878.82)
+Auto Services: BEARISH (-287857.75)
